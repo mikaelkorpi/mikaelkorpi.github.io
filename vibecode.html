@@ -44,11 +44,9 @@ body{font-family:var(--font-g);background:var(--bone);color:var(--ink);min-heigh
   opacity:0;transform:translateY(16px);animation:rise .8s .15s cubic-bezier(.2,.7,.2,1) forwards}
 .lede em{font-style:italic;color:var(--brick)}
 @keyframes rise{to{opacity:1;transform:translateY(0)}}
-.stack{font-family:var(--font-m);font-size:11px;letter-spacing:.1em;text-transform:lowercase;color:rgba(26,19,16,.6);margin-top:18px;
-  opacity:0;animation:rise .8s .35s cubic-bezier(.2,.7,.2,1) forwards}
 
 .projects{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:24px;margin-top:52px}
-.proj{position:relative;padding:24px 26px 24px;color:var(--ink);display:block;
+.proj{position:relative;padding:24px 26px 26px;color:var(--ink);display:flex;
   opacity:0;transform:translateY(18px);animation:rise .7s cubic-bezier(.2,.7,.2,1) forwards;transition:transform .3s cubic-bezier(.34,1.4,.64,1)}
 .proj:hover{transform:translateY(-4px) rotate(-.4deg)}
 .proj .shot{position:relative;width:100%;aspect-ratio:16/11;margin-bottom:18px;overflow:hidden;border:1.5px solid rgba(26,19,16,.25);border-radius:14px;
@@ -60,10 +58,11 @@ body{font-family:var(--font-g);background:var(--bone);color:var(--ink);min-heigh
 .proj .shot .dots i.on{background:var(--brick)}
 .proj .shot .ph{display:none;font-family:var(--font-m);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(26,19,16,.3)}
 .proj .shot.empty .ph{display:block}
-.proj .links{display:flex;gap:14px;margin-top:10px}
+.proj .links{display:flex;gap:14px;margin-top:12px}
 .proj .links a{font-family:var(--font-m);font-size:9.5px;letter-spacing:.1em;color:var(--brick);text-decoration:none;border-bottom:1px solid var(--brick)}
 .proj .links a:hover{color:var(--ink);border-color:var(--ink)}
-.proj .sh{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+.proj .sh{position:absolute;inset:0;width:100%;height:100%;z-index:0;overflow:visible}
+.proj .in{width:100%}
 .proj:hover .sh path.a{stroke:var(--brick)}
 .proj .in{position:relative;z-index:1}
 .proj .tag{font-family:var(--font-m);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--brick)}
@@ -72,7 +71,7 @@ body{font-family:var(--font-g);background:var(--bone);color:var(--ink);min-heigh
 .proj .row b{position:absolute;left:0;top:2px;font-family:var(--font-m);font-size:8.5px;font-weight:400;letter-spacing:.1em;
   text-transform:uppercase;color:var(--brick)}
 .proj .access{font-family:var(--font-m);font-size:9px;letter-spacing:.1em;text-transform:lowercase;color:rgba(26,19,16,.5);
-  margin-top:16px;display:flex;align-items:center;gap:6px}
+  margin-top:18px;padding-top:14px;border-top:1px solid rgba(26,19,16,.15);display:flex;align-items:center;gap:6px}
 .proj .access::before{content:"";width:5px;height:5px;border-radius:50%;background:rgba(26,19,16,.35);flex:none}
 .proj .go{font-family:var(--font-m);font-size:9.5px;letter-spacing:.1em;color:var(--brick);margin-top:8px;display:inline-block}
 .proj .num{position:absolute;top:14px;right:20px;z-index:1;font-family:var(--font-e);font-size:15px;color:var(--brick);opacity:.55}
@@ -107,8 +106,7 @@ body{font-family:var(--font-g);background:var(--bone);color:var(--ink);min-heigh
 </div>
 
 <div class="wrap">
-  <p class="lede">Working out what I can build myself, one small tool at a time.</p>
-  <p class="stack">html · react · next.js · typescript · supabase · vercel</p>
+  <p class="lede">Working out what I can build myself.</p>
   <div class="projects" id="projects"></div>
   <div class="foot" id="foot"></div>
 </div>
@@ -149,6 +147,19 @@ const DEFAULT_PROJECTS=[
 ];
 const PROJECTS=window.CODE_PROJECTS&&window.CODE_PROJECTS.length?window.CODE_PROJECTS:DEFAULT_PROJECTS;
 const GEEZ=['\u1369','\u136A','\u136B','\u136C'];
+/* the hand-drawn frame is drawn to the card's real size, so nothing overlaps it */
+function fitShape(card){
+  const w=Math.round(card.offsetWidth),h=Math.round(card.offsetHeight);
+  if(!w||!h)return;
+  const svg=card.querySelector('.sh');
+  svg.setAttribute('viewBox',`0 0 ${w} ${h}`);
+  svg.innerHTML=`<path class="a" d="${roughRect(w,h,26,3)}" fill="none" stroke="#1A1310" stroke-width="2"/>`
+    +`<path d="${roughRect(w,h,26,4.5)}" fill="none" stroke="#C2432B" stroke-width="1.1" opacity=".4"/>`;
+}
+let fitT;
+addEventListener('resize',()=>{clearTimeout(fitT);fitT=setTimeout(()=>document.querySelectorAll('.proj').forEach(fitShape),160);});
+addEventListener('load',()=>document.querySelectorAll('.proj').forEach(fitShape));
+
 function roughRect(w,h,r,amp){
   const F=n=>n.toFixed(1),j=()=>(Math.random()-.5)*amp*2;
   const edge=(x1,y1,x2,y2)=>{let d='';for(let i=1;i<=4;i++){const t=i/4,pt=(i-.5)/4;
@@ -169,7 +180,7 @@ PROJECTS.forEach((p,i)=>{
   const a=document.createElement('div');a.className='proj';
   a.style.animationDelay=(.45+i*.12)+'s';
   const shots=p.shots||[];
-  a.innerHTML=shape(340,540)+`<span class="num">${GEEZ[i%4]}</span>
+  a.innerHTML=`<svg class="sh" preserveAspectRatio="none"></svg><span class="num">${GEEZ[i%4]}</span>
     <div class="in">
       <div class="shot${shots.length?'':' empty'}">
         ${shots.map((sr,si)=>`<img src="${sr}" class="${si?'':'on'}" alt="">`).join('')}
@@ -184,6 +195,7 @@ PROJECTS.forEach((p,i)=>{
       <span class="links">${p.links.map(l=>`<a href="${l.u}" ${l.u.startsWith('http')?'target="_blank" rel="noopener"':''}>${l.t}</a>`).join('')}</span>
     </div>`;
   box.appendChild(a);
+  fitShape(a);
   const imgs=[...a.querySelectorAll('.shot img')],dots=[...a.querySelectorAll('.dots i')];
   if(imgs.length>1){
     let n=0;setInterval(()=>{
