@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mikael — admin</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%23C2432B%27/%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%275%27 fill=%27%23F0E6D3%27/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400&family=Fraunces:ital,opsz,wght@1,9..144,400&family=Noto+Sans+Ethiopic:wght@400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--brick:#C2432B;--bone:#F0E6D3;--ink:#1A1310;
+--font-g:'Space Grotesk',system-ui,sans-serif;--font-m:'Space Mono',monospace;--font-v:'Fraunces',serif;--font-e:'Noto Sans Ethiopic',sans-serif}
+body{font-family:var(--font-g);background:var(--bone);color:var(--ink);min-height:100vh;
+  background-image:radial-gradient(rgba(26,19,16,.13) 1.3px,transparent 1.3px);background-size:44px 44px}
+
+.topbar{position:sticky;top:0;z-index:40;background:var(--bone);border-bottom:1.5px solid rgba(26,19,16,.18);
+  padding:12px 22px 12px;display:flex;flex-direction:column;gap:12px}
+.topbar .r1{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.topbar .r2{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.identity{display:flex;font-weight:500;font-size:17px;letter-spacing:.16em;text-transform:lowercase;color:var(--brick);text-decoration:none}
+.identity span{display:inline-block;position:relative}
+.identity .seed{position:absolute;left:50%;top:3.5px;width:2.4px;height:2.4px;border-radius:50%;background:var(--ink);transform:translateX(-50%);box-shadow:0 0 0 1.2px var(--bone)}
+.identity em{font-style:normal;color:rgba(26,19,16,.4);letter-spacing:.14em;margin-left:12px;font-size:11px;align-self:center;font-family:var(--font-m);text-transform:uppercase}
+.bar-right{display:flex;align-items:center;gap:10px}
+.sections{display:flex;gap:6px}
+.cloud{font-family:var(--font-m);font-size:10.5px;letter-spacing:.1em;text-transform:lowercase;color:rgba(26,19,16,.55);
+  display:flex;align-items:center;gap:7px}
+.cloud::before{content:"";width:7px;height:7px;border-radius:50%;background:rgba(26,19,16,.3)}
+.cloud.on{color:var(--brick)}.cloud.on::before{background:var(--brick)}
+.sections button{font-family:var(--font-m);font-size:11px;letter-spacing:.08em;text-transform:lowercase;width:86px;padding:8px 0;
+  background:transparent;border:1.5px solid var(--ink);border-radius:16px;cursor:pointer;color:var(--ink)}
+.sections button.on{background:var(--ink);border-color:var(--ink);color:var(--bone)}
+.shots-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-top:10px}
+.shots-grid .s{position:relative;aspect-ratio:16/10;border:1.5px solid rgba(26,19,16,.3);border-radius:10px;overflow:hidden;background:#fff}
+.shots-grid .s img{width:100%;height:100%;object-fit:cover}
+.shots-grid .s button{position:absolute;top:3px;right:3px;background:var(--brick);color:var(--bone);border:none;border-radius:50%;
+  width:17px;height:17px;font-size:10px;line-height:1;cursor:pointer}
+.linkrow{display:flex;gap:8px;margin-bottom:8px}
+.linkrow input{flex:1}
+.linkrow button{background:none;border:none;color:var(--brick);font-family:var(--font-m);font-size:10px;cursor:pointer}
+.btn{font-family:var(--font-m);font-size:11px;letter-spacing:.08em;text-transform:lowercase;
+  background:var(--bone);border:1.5px solid var(--ink);border-radius:20px;padding:9px 16px;cursor:pointer;color:var(--ink);text-decoration:none;display:inline-block}
+.btn:hover{border-color:var(--brick);color:var(--brick)}
+.btn:disabled{opacity:.35;cursor:default}
+.btn:disabled:hover{border-color:var(--ink);color:var(--ink)}
+.item.dragging{opacity:.4}
+.item.over{outline:2px dashed var(--brick);outline-offset:3px}
+.item .grip{position:absolute;bottom:10px;left:16px;z-index:2;font-family:var(--font-m);font-size:9px;letter-spacing:.1em;color:rgba(26,19,16,.35);cursor:grab}
+.item:hover .grip{color:var(--brick)}
+.hist{position:fixed;top:0;right:0;bottom:0;width:min(380px,92vw);background:var(--bone);border-left:1.5px solid var(--ink);
+  z-index:70;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);overflow-y:auto;padding:24px}
+body.hist-open .hist{transform:translateX(0)}
+.hist h3{font-family:var(--font-v);font-style:italic;font-size:22px;margin-bottom:16px}
+.hist .row{padding:12px 0;border-bottom:1px solid rgba(26,19,16,.15);display:flex;justify-content:space-between;align-items:center;gap:12px}
+.hist .row p{font-family:var(--font-m);font-size:10.5px;letter-spacing:.05em;color:rgba(26,19,16,.7)}
+.hist .row button{font-family:var(--font-m);font-size:9.5px;letter-spacing:.1em;background:none;border:1.5px solid var(--ink);
+  border-radius:14px;padding:6px 12px;cursor:pointer;color:var(--ink)}
+.hist .row button:hover{background:var(--brick);border-color:var(--brick);color:var(--bone)}
+.hist .close{position:absolute;top:16px;right:20px;background:none;border:none;cursor:pointer;font-family:var(--font-m);font-size:10px;letter-spacing:.12em;color:var(--brick)}
+.btn.solid{background:var(--brick);border-color:var(--brick);color:var(--bone)}
+.btn.solid:hover{background:var(--ink);border-color:var(--ink);color:var(--bone)}
+
+.wrap{max-width:1080px;margin:0 auto;padding:8px 22px 90px}
+.note{font-family:var(--font-m);font-size:11px;line-height:1.9;color:rgba(26,19,16,.6);border-left:2px solid var(--brick);padding:6px 0 6px 14px;margin:10px 0 26px}
+.note b{color:var(--brick);font-weight:400}
+
+.tabs{display:flex;gap:8px;margin-bottom:14px}
+.count{font-family:var(--font-m);font-size:10px;letter-spacing:.1em;color:rgba(26,19,16,.45);margin-bottom:18px}
+.tabs button{font-family:var(--font-m);font-size:11px;letter-spacing:.08em;text-transform:lowercase;width:92px;padding:7px 0;
+  background:var(--bone);border:1.5px solid var(--ink);border-radius:16px;cursor:pointer;color:var(--ink)}
+.tabs button.on{background:var(--brick);border-color:var(--brick);color:var(--bone)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+.item{position:relative;cursor:pointer;padding:18px 18px 16px;background:transparent}
+.item .sh{position:absolute;inset:0;width:100%;height:100%;overflow:visible;z-index:0}
+.item .in{position:relative;z-index:1}
+.item:hover .sh path.a{stroke:var(--brick)}
+.item .k{font-family:var(--font-m);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--brick)}
+.item .n{font-weight:700;font-size:15px;line-height:1.25;margin-top:6px;min-height:2.4em}
+.item .b{font-family:var(--font-m);font-size:10px;color:rgba(26,19,16,.6);margin-top:4px}
+.item .thumb{width:100%;aspect-ratio:16/10;margin-top:12px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-top:1.5px solid rgba(26,19,16,.2);padding-top:12px}
+.item .thumb img{max-width:100%;max-height:100%;object-fit:contain}
+.item .thumb .ph{font-family:var(--font-m);font-size:9px;letter-spacing:.1em;color:rgba(26,19,16,.35)}
+.item .del{position:absolute;top:10px;right:14px;z-index:2;background:none;border:none;cursor:pointer;font-family:var(--font-m);font-size:9px;letter-spacing:.1em;color:var(--brick);opacity:0}
+.item:hover .del{opacity:.8}
+.item .del:hover{opacity:1;text-decoration:underline}
+.item .num{position:absolute;top:10px;left:16px;z-index:2;font-family:var(--font-e);font-size:14px;color:var(--brick);opacity:.6}
+
+.add{display:flex;align-items:center;justify-content:center;min-height:190px;cursor:pointer;position:relative}
+.add span{font-family:var(--font-m);font-size:11px;letter-spacing:.1em;color:var(--brick);z-index:1}
+
+/* editor */
+.scrim{position:fixed;inset:0;background:var(--brick);opacity:0;pointer-events:none;z-index:60;transition:opacity .3s;
+  background-image:radial-gradient(rgba(240,230,211,.22) 1.4px,transparent 1.4px);background-size:44px 44px}
+body.editing .scrim{opacity:.97;pointer-events:auto}
+.editor{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) scale(.95) rotate(-.8deg);z-index:61;
+  width:min(620px,92vw);max-height:88vh;opacity:0;pointer-events:none;transition:opacity .3s,transform .4s cubic-bezier(.34,1.3,.64,1)}
+body.editing .editor{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1) rotate(-.8deg)}
+.editor .sh{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+.ed-in{position:relative;z-index:1;padding:38px 40px 34px;max-height:88vh;overflow-y:auto}
+.ed-in::-webkit-scrollbar{width:5px}.ed-in::-webkit-scrollbar-thumb{background:rgba(26,19,16,.25);border-radius:3px}
+.ed-title{font-family:var(--font-v);font-style:italic;font-size:26px;margin-bottom:20px}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.field label{font-family:var(--font-m);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--brick)}
+.field input,.field textarea,.field select{font-family:var(--font-g);font-size:14px;padding:10px 12px;border:1.5px solid var(--ink);
+  background:transparent;color:var(--ink);border-radius:12px;outline:none}
+.field textarea{min-height:70px;resize:vertical;font-family:var(--font-v);font-style:italic;font-size:15px}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--brick)}
+.kindrow{display:flex;gap:6px}
+.kindrow button{flex:1;font-family:var(--font-m);font-size:10px;letter-spacing:.06em;text-transform:lowercase;padding:9px 0;
+  background:transparent;border:1.5px solid var(--ink);border-radius:14px;cursor:pointer;color:var(--ink)}
+.kindrow button.on{background:var(--brick);border-color:var(--brick);color:var(--bone)}
+.drop{border:1.5px dashed rgba(26,19,16,.4);border-radius:14px;padding:22px;text-align:center;cursor:pointer;position:relative}
+.drop.over{border-color:var(--brick);background:rgba(194,67,43,.06)}
+.drop input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.drop p{font-family:var(--font-m);font-size:10px;letter-spacing:.06em;color:rgba(26,19,16,.55)}
+.drop img{max-width:100%;max-height:170px;margin-top:12px;display:block;margin-inline:auto}
+.ed-foot{display:flex;gap:10px;margin-top:8px}
+.ed-close{position:absolute;top:16px;right:22px;z-index:2;background:none;border:none;cursor:pointer;font-family:var(--font-m);font-size:10px;letter-spacing:.12em;color:var(--brick)}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(80px);background:var(--ink);color:var(--bone);
+  font-family:var(--font-m);font-size:11px;letter-spacing:.06em;padding:12px 22px;border-radius:20px;z-index:80;transition:transform .3s}
+.toast.on{transform:translateX(-50%) translateY(0)}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="r1">
+    <a class="identity" href="index.html"><span>m</span><span>ı<i class="seed"></i></span><span>k</span><span>a</span><span>e</span><span>l</span><em>admin</em></a>
+    <div class="bar-right">
+      <span class="cloud" id="cloud">checking…</span>
+      <button class="btn" id="signin">connect github</button>
+    </div>
+  </div>
+  <div class="r2">
+    <div class="sections" id="sections">
+      <button data-s="medium" class="on">medium</button><button data-s="code">code</button><button data-s="thoughts">thoughts</button>
+    </div>
+    <div class="bar-right">
+      <a class="btn" id="preview" href="medium.html" target="_blank">preview ↗</a>
+      <button class="btn" id="undo-btn" disabled>undo</button>
+      <button class="btn" id="hist-btn">history</button>
+      <button class="btn" id="import-btn">import</button>
+      <button class="btn" id="export-btn">export</button>
+      <button class="btn solid" id="publish-btn">publish</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <p class="note">
+    edits are kept as a draft in this browser. <b>publish</b> commits the section straight into the
+    repo through the GitHub API, and the site is live about a minute later. no database, no service,
+    no bill — every publish is an ordinary commit, so <b>history</b> can bring any version back.
+  </p>
+  <div class="tabs" id="tabs"></div>
+  <p class="count" id="count"></p>
+  <div class="grid" id="grid"></div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="editor" id="editor"></div>
+<div class="hist" id="hist"><button class="close" id="hist-close">close</button><h3>history</h3><div id="hist-list"></div></div>
+<div class="toast" id="toast"></div>
+<input type="file" id="import-file" accept=".js,.json" style="display:none">
+
+<script src="data/medium-items.js"></script>
+<script src="data/code-projects.js"></script>
+<script src="data/thoughts-posts.js"></script>
+<script src="data/config.js"></script>
+<script src="assets/store.js"></script>
+<script>
+const KEYS={medium:'mikael_medium_v1',code:'mikael_code_v1',thoughts:'mikael_thoughts_v1'};
+const FILES={medium:'medium-items.js',code:'code-projects.js',thoughts:'thoughts-posts.js'};
+const VARS={medium:'window.MEDIUM_ITEMS',code:'window.CODE_PROJECTS',thoughts:'window.THOUGHTS_POSTS'};
+const KINDS=['music','art','object'];
+const GEEZ=['\u1369','\u136A','\u136B','\u136C','\u136D','\u136E','\u136F','\u1370','\u1371'];
+let section='medium',filter='all',editing=null,pendingKind='music',pendingImage=null,pendingShots=[],pendingLinks=[];
+
+let data={medium:[],code:[],thoughts:[]},dirty={medium:false,code:false,thoughts:false};
+async function pull(){
+  for(const k of ['medium','code','thoughts']){
+    data[k]=await Store.load(k);
+    dirty[k]=Store.hasDraft(k);
+  }
+}
+function payloadSize(k){return new Blob([JSON.stringify(data[k])]).size;}
+let undoStack=[];
+function pushUndo(){
+  undoStack.push(JSON.stringify(data[section]));
+  if(undoStack.length>30)undoStack.shift();
+  document.getElementById('undo-btn').disabled=false;
+}
+/* save = keep a draft in this browser. publish = commit it into the repo. */
+async function save(quiet){
+  Store.draft(section,data[section]);
+  dirty[section]=true;markDirty();
+  if(!quiet)toast('saved as draft — press publish to put it live');
+  return {ok:true};
+}
+function markDirty(){
+  const b=document.getElementById('publish-btn');
+  if(b)b.textContent=dirty[section]?'publish •':'publish';
+}
+async function publish(){
+  if(!Store.token()){toast('connect github first');return;}
+  const size=payloadSize(section);
+  if(size>1500000){toast('that file is '+Math.round(size/1024)+' kB — shrink an image first');return;}
+  const b=document.getElementById('publish-btn');
+  b.disabled=true;b.textContent='publishing…';
+  try{
+    await Store.publish(section,data[section]);
+    dirty[section]=false;
+    toast('published — live in about a minute');
+  }catch(e){toast('publish failed: '+e.message);}
+  b.disabled=false;markDirty();
+}
+const toast=m=>{const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2200);};
+
+/* shrink pictures before storing them */
+function shrink(file,max=1200){
+  return new Promise(res=>{
+    const r=new FileReader();
+    r.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
+        const sc=Math.min(1,max/img.width);
+        const c=document.createElement('canvas');
+        c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);
+        c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+        res(c.toDataURL('image/jpeg',.74));
+      };
+      img.src=e.target.result;
+    };
+    r.readAsDataURL(file);
+  });
+}
+
+function roughRect(w,h,r,amp){
+  const F=n=>n.toFixed(1),j=()=>(Math.random()-.5)*amp*2;
+  const edge=(x1,y1,x2,y2)=>{let d='';for(let i=1;i<=4;i++){const t=i/4,pt=(i-.5)/4;
+    d+=` Q${F(x1+(x2-x1)*pt+j())},${F(y1+(y2-y1)*pt+j())} ${F(x1+(x2-x1)*t+j())},${F(y1+(y2-y1)*t+j())}`;}return d;};
+  let d=`M${F(r)},${F(j())}`;
+  d+=edge(r,0,w-r,0)+` Q${F(w+j())},${F(j())} ${F(w+j())},${F(r)}`;
+  d+=edge(w,r,w,h-r)+` Q${F(w+j())},${F(h+j())} ${F(w-r)},${F(h+j())}`;
+  d+=edge(w-r,h,r,h)+` Q${F(j())},${F(h+j())} ${F(j())},${F(h-r)}`;
+  d+=edge(0,h-r,0,r)+` Q${F(j())},${F(j())} ${F(r)},${F(j())} Z`;
+  return d;
+}
+const shape=(w,h,fill)=>`<svg class="sh" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+  <path class="a" d="${roughRect(w,h,26,3)}" fill="${fill||'transparent'}" stroke="#1A1310" stroke-width="2"/>
+  <path d="${roughRect(w,h,26,4.5)}" fill="none" stroke="#C2432B" stroke-width="1.1" opacity=".4"/></svg>`;
+
+/* section switch */
+document.querySelectorAll('#sections button').forEach(b=>b.onclick=()=>{
+  section=b.dataset.s;filter='all';
+  document.querySelectorAll('#sections button').forEach(x=>x.classList.toggle('on',x===b));
+  document.getElementById('preview').href={medium:'medium.html',code:'vibecode.html',thoughts:'thoughts.html'}[section];
+  markDirty();
+  buildTabs();render();
+});
+
+/* tabs (only for medium) */
+const tabs=document.getElementById('tabs');
+function buildTabs(){
+  tabs.innerHTML='';
+  if(section!=='medium'){tabs.style.display='none';return;}
+  tabs.style.display='flex';
+  ['all',...KINDS].forEach(k=>{
+    const b=document.createElement('button');b.textContent=k;if(k===filter)b.classList.add('on');
+    b.onclick=()=>{filter=k;[...tabs.children].forEach(x=>x.classList.toggle('on',x===b));render();};
+    tabs.appendChild(b);
+  });
+}
+
+/* grid */
+function render(){
+  const g=document.getElementById('grid');g.innerHTML='';
+  const list=section==='medium'?data.medium.filter(i=>filter==='all'||i.kind===filter):data.code;
+  list.forEach((it,idx)=>{
+    const d=document.createElement('div');d.className='item';
+    const thumb=section==='medium'
+      ? (it.image?`<img src="${it.image}">`:`<span class="ph">${it.spotify?'spotify':'no image'}</span>`)
+      : section==='code'
+      ? ((it.shots&&it.shots[0])?`<img src="${it.shots[0]}">`:`<span class="ph">no shots</span>`)
+      : `<span class="ph">${(it.body||[]).length} blocks</span>`;
+    d.innerHTML=shape(240,230)+`<span class="num">${GEEZ[idx%9]}</span>
+      <button class="del">delete</button>
+      <div class="in">
+        <p class="k">${section==='medium'?it.kind:section==='code'?it.tag:(it.n+' · '+it.date)}</p>
+        <p class="n">${(section==='thoughts'?it.title:it.name)||'untitled'}</p>
+        <p class="b">${section==='medium'?(it.by||''):section==='code'?(it.access||''):(it.mins||'')}</p>
+        <div class="thumb">${thumb}</div>
+      </div>`;
+    d.querySelector('.del').onclick=async e=>{e.stopPropagation();
+      if(confirm('Delete this?')){pushUndo();data[section]=data[section].filter(x=>x.id!==it.id);await save();render();toast('deleted');}};
+    d.innerHTML+='<span class="grip">drag</span>';
+    d.draggable=true;
+    d.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',it.id);d.classList.add('dragging');});
+    d.addEventListener('dragend',()=>d.classList.remove('dragging'));
+    d.addEventListener('dragover',e=>{e.preventDefault();d.classList.add('over');});
+    d.addEventListener('dragleave',()=>d.classList.remove('over'));
+    d.addEventListener('drop',async e=>{
+      e.preventDefault();d.classList.remove('over');
+      const from=e.dataTransfer.getData('text/plain');
+      if(!from||from===it.id)return;
+      pushUndo();
+      const arr=data[section];
+      const fi=arr.findIndex(x=>x.id===from),ti=arr.findIndex(x=>x.id===it.id);
+      arr.splice(ti,0,arr.splice(fi,1)[0]);
+      await save();render();toast('reordered');
+    });
+    d.onclick=e=>{if(!e.target.closest('.grip'))openEditor(it);};
+    g.appendChild(d);
+  });
+  const kb=Math.round(new Blob([JSON.stringify(data[section])]).size/1024);
+  document.getElementById('count').textContent=list.length+' '+(section==='thoughts'?'posts':section==='code'?'projects':'cards')
+    +(section==='medium'&&filter!=='all'?' in '+filter:'')+' · '+kb+' kB'+(kb>700?' — close to the 1 MB cloud limit':'');
+  const add=document.createElement('div');add.className='item add';
+  add.innerHTML=shape(240,190)+'<span>+ add</span>';
+  add.onclick=()=>openEditor(null);
+  g.appendChild(add);
+}
+
+/* editor */
+const ed=document.getElementById('editor');
+function openEditor(it){
+  editing=it;
+  if(section==='medium'){
+    pendingKind=it?it.kind:'music';pendingImage=it?it.image:null;
+    ed.innerHTML=shape(620,720,'#F0E6D3')+`
+      <button class="ed-close">close</button>
+      <div class="ed-in">
+        <p class="ed-title">${it?'edit':'new item'}</p>
+        <div class="field"><label>kind</label><div class="kindrow" id="kindrow">
+          ${KINDS.map(k=>`<button data-k="${k}" class="${k===pendingKind?'on':''}">${k}</button>`).join('')}</div></div>
+        <div class="field"><label>name / title</label><input id="f-name" value="${it?(it.name||''):''}"></div>
+        <div class="field"><label>by / where</label><input id="f-by" value="${it?(it.by||''):''}"></div>
+        <div class="field" id="wrap-spotify"><label>spotify link</label><input id="f-spotify" value="${it?(it.spotify||''):''}"></div>
+        <div class="field" id="wrap-image"><label>image</label><div class="drop" id="drop"><input type="file" accept="image/*" id="f-file">
+          <p>drop an image, or click to choose</p><img id="prev" src="${pendingImage||''}" style="${pendingImage?'':'display:none'}"></div></div>
+        <div class="field"><label>why it's here</label><textarea id="f-why">${it?(it.why||''):''}</textarea></div>
+        <div class="ed-foot"><button class="btn solid" id="do-save">save</button><button class="btn" id="do-cancel">cancel</button></div>
+      </div>`;
+    ed.querySelectorAll('#kindrow button').forEach(b=>b.onclick=()=>{
+      pendingKind=b.dataset.k;
+      ed.querySelectorAll('#kindrow button').forEach(x=>x.classList.toggle('on',x===b));
+      ed.querySelector('#wrap-spotify').style.display=pendingKind==='music'?'flex':'none';
+      ed.querySelector('#wrap-image').style.display=pendingKind==='music'?'none':'flex';
+    });
+    ed.querySelector('#wrap-spotify').style.display=pendingKind==='music'?'flex':'none';
+    ed.querySelector('#wrap-image').style.display=pendingKind==='music'?'none':'flex';
+    const drop=ed.querySelector('#drop'),prev=ed.querySelector('#prev');
+    const take=async f=>{pendingImage=await shrink(f);prev.src=pendingImage;prev.style.display='block';};
+    ed.querySelector('#f-file').onchange=e=>{if(e.target.files[0])take(e.target.files[0]);};
+    drop.ondragover=e=>{e.preventDefault();drop.classList.add('over');};
+    drop.ondragleave=()=>drop.classList.remove('over');
+    drop.ondrop=e=>{e.preventDefault();drop.classList.remove('over');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))take(f);};
+  } else if(section==='thoughts'){
+    ed.innerHTML=shape(620,820,'#F0E6D3')+`
+      <button class="ed-close">close</button>
+      <div class="ed-in">
+        <p class="ed-title">${it?'edit':'new post'}</p>
+        <div class="field"><label>number</label><input id="f-n" value="${it?(it.n||''):''}" placeholder="06"></div>
+        <div class="field"><label>date</label><input id="f-date" value="${it?(it.date||''):''}" placeholder="lokakuu 2026"></div>
+        <div class="field"><label>title</label><input id="f-title" value="${it?(it.title||''):''}"></div>
+        <div class="field"><label>reading time</label><input id="f-mins" value="${it?(it.mins||''):''}" placeholder="3 min"></div>
+        <div class="field"><label>lead — one sentence</label><textarea id="f-lead">${it?(it.lead||''):''}</textarea></div>
+        <div class="field"><label>body — one html block per line</label>
+          <textarea id="f-body" style="min-height:260px;font-family:var(--font-m);font-style:normal;font-size:12px">${it?(it.body||[]).join('\n').replace(/</g,'&lt;'):'<p>Ensimmäinen kappale.</p>\n<h2>Väliotsikko</h2>\n<p>Toinen kappale.</p>\n<blockquote>Sitaatti.</blockquote>'}</textarea></div>
+        <div class="ed-foot"><button class="btn solid" id="do-save">save</button><button class="btn" id="do-cancel">cancel</button></div>
+      </div>`;
+  } else {
+    pendingShots=it?[...(it.shots||[])]:[];
+    pendingLinks=it?JSON.parse(JSON.stringify(it.links||[])):[{t:'source ↗',u:''}];
+    ed.innerHTML=shape(620,860,'#F0E6D3')+`
+      <button class="ed-close">close</button>
+      <div class="ed-in">
+        <p class="ed-title">${it?'edit':'new project'}</p>
+        <div class="field"><label>name</label><input id="f-name" value="${it?(it.name||''):''}"></div>
+        <div class="field"><label>stack</label><input id="f-tag" placeholder="react · supabase · slack" value="${it?(it.tag||''):''}"></div>
+        <div class="field"><label>access</label><input id="f-access" placeholder="public / internal · ilmiö sso" value="${it?(it.access||''):''}"></div>
+        <div class="field"><label>need — why it exists</label><textarea id="f-need">${it?(it.need||''):''}</textarea></div>
+        <div class="field"><label>what — what it does</label><textarea id="f-what">${it?(it.what||''):''}</textarea></div>
+        <div class="field"><label>learned — what you took away</label><textarea id="f-learned">${it?(it.learned||''):''}</textarea></div>
+        <div class="field"><label>screenshots</label>
+          <div class="drop" id="drop"><input type="file" accept="image/*" id="f-file" multiple>
+            <p>drop images here — they rotate on the card</p></div>
+          <div class="shots-grid" id="shots"></div>
+        </div>
+        <div class="field"><label>links</label><div id="links"></div>
+          <button class="btn" id="add-link" style="align-self:flex-start">+ link</button></div>
+        <div class="ed-foot"><button class="btn solid" id="do-save">save</button><button class="btn" id="do-cancel">cancel</button></div>
+      </div>`;
+    const drawShots=()=>{
+      ed.querySelector('#shots').innerHTML=pendingShots.map((sr,i)=>
+        `<div class="s"><img src="${sr}"><button data-i="${i}">×</button></div>`).join('');
+      ed.querySelectorAll('#shots button').forEach(b=>b.onclick=()=>{pendingShots.splice(+b.dataset.i,1);drawShots();});
+    };
+    const drawLinks=()=>{
+      ed.querySelector('#links').innerHTML=pendingLinks.map((l,i)=>
+        `<div class="linkrow"><input data-i="${i}" data-f="t" value="${l.t||''}" placeholder="label">
+         <input data-i="${i}" data-f="u" value="${l.u||''}" placeholder="url"><button data-i="${i}">×</button></div>`).join('');
+      ed.querySelectorAll('#links input').forEach(inp=>inp.oninput=()=>{pendingLinks[+inp.dataset.i][inp.dataset.f]=inp.value;});
+      ed.querySelectorAll('#links button').forEach(b=>b.onclick=()=>{pendingLinks.splice(+b.dataset.i,1);drawLinks();});
+    };
+    drawShots();drawLinks();
+    ed.querySelector('#add-link').onclick=()=>{pendingLinks.push({t:'',u:''});drawLinks();};
+    const drop=ed.querySelector('#drop');
+    const take=async files=>{for(const f of files){if(f.type.startsWith('image/'))pendingShots.push(await shrink(f));}drawShots();};
+    ed.querySelector('#f-file').onchange=e=>take(e.target.files);
+    drop.ondragover=e=>{e.preventDefault();drop.classList.add('over');};
+    drop.ondragleave=()=>drop.classList.remove('over');
+    drop.ondrop=e=>{e.preventDefault();drop.classList.remove('over');take(e.dataTransfer.files);};
+  }
+  ed.querySelector('.ed-close').onclick=close;
+  ed.querySelector('#do-cancel').onclick=close;
+  ed.querySelector('#do-save').onclick=commit;
+  document.body.classList.add('editing');
+}
+function close(){document.body.classList.remove('editing');}
+document.getElementById('scrim').onclick=close;
+addEventListener('keydown',e=>{if(e.key==='Escape')close();});
+
+async function commit(){
+  const v=id=>{const el=ed.querySelector(id);return el?el.value.trim():'';};
+  let d;
+  if(section==='medium'){
+    d={id:editing?editing.id:'i'+Date.now().toString(36),kind:pendingKind,
+       name:v('#f-name'),by:v('#f-by'),
+       spotify:pendingKind==='music'?v('#f-spotify'):null,
+       image:pendingKind!=='music'?pendingImage:null,why:v('#f-why'),
+       x:editing?editing.x:120+Math.round(Math.random()*700),
+       y:editing?editing.y:120+Math.round(Math.random()*600),
+       w:editing?editing.w:(pendingKind==='music'?330:260)};
+  } else if(section==='thoughts'){
+    const raw=ed.querySelector('#f-body').value;
+    d={id:editing?editing.id:'t'+Date.now().toString(36),
+       n:v('#f-n'),date:v('#f-date'),title:v('#f-title'),mins:v('#f-mins'),lead:v('#f-lead'),
+       body:raw.split('\n').map(x=>x.trim()).filter(Boolean)};
+  } else {
+    d={id:editing?editing.id:'p'+Date.now().toString(36),
+       name:v('#f-name'),tag:v('#f-tag'),access:v('#f-access'),
+       need:v('#f-need'),what:v('#f-what'),learned:v('#f-learned'),
+       shots:pendingShots,links:pendingLinks.filter(l=>l.u)};
+  }
+  pushUndo();
+  if(editing)data[section]=data[section].map(i=>i.id===editing.id?d:i);
+  else data[section].push(d);
+  await save();render();close();toast(editing?'updated':'added');
+}
+
+/* export / import */
+document.getElementById('publish-btn').onclick=publish;
+document.getElementById('export-btn').onclick=()=>{
+  const body=`/* Generated by admin.html — replace data/${FILES[section]} with this file. */\n${VARS[section]} = `
+    +JSON.stringify(data[section],null,2)+';\n';
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([body],{type:'text/javascript'}));
+  a.download=FILES[section];a.click();URL.revokeObjectURL(a.href);
+  toast('downloaded — commit it to data/');
+};
+document.getElementById('import-btn').onclick=()=>document.getElementById('import-file').click();
+document.getElementById('import-file').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{const t=ev.target.result;
+    try{const m=t.match(/=\s*([\s\S]*?);\s*$/);data[section]=JSON.parse(m?m[1]:t);save();render();toast('imported');}
+    catch(err){toast('could not read that file');}};
+  r.readAsText(f);
+};
+
+/* undo */
+document.getElementById('undo-btn').onclick=async()=>{
+  if(!undoStack.length)return;
+  data[section]=JSON.parse(undoStack.pop());
+  document.getElementById('undo-btn').disabled=!undoStack.length;
+  await save();render();toast('undone');
+};
+
+/* history */
+const histEl=document.getElementById('hist'),histList=document.getElementById('hist-list');
+document.getElementById('hist-close').onclick=()=>document.body.classList.remove('hist-open');
+document.getElementById('hist-btn').onclick=async()=>{
+  document.body.classList.add('hist-open');
+  histList.innerHTML='<p style="font-family:var(--font-m);font-size:10.5px;opacity:.6">loading…</p>';
+  if(!Store.token()){
+    histList.innerHTML='<p style="font-family:var(--font-m);font-size:10.5px;opacity:.6">connect github to see the history</p>';
+    return;
+  }
+  const rows=await Store.history(section);
+  if(!rows.length){histList.innerHTML='<p style="font-family:var(--font-m);font-size:10.5px;opacity:.6">no versions yet</p>';return;}
+  histList.innerHTML=rows.map(r=>{
+    const d=new Date(r.date);
+    return `<div class="row"><p>${d.toLocaleDateString('fi-FI')} ${d.toLocaleTimeString('fi-FI',{hour:'2-digit',minute:'2-digit'})}<br>
+      <span style="opacity:.55">${r.by} · ${r.sha.slice(0,7)}</span></p><button data-sha="${r.sha}">restore</button></div>`;
+  }).join('');
+  histList.querySelectorAll('button').forEach(b=>b.onclick=async()=>{
+    if(!confirm('Restore this version as a draft?'))return;
+    try{
+      const items=await Store.restore(section,b.dataset.sha);
+      pushUndo();data[section]=items;await save(true);render();
+      document.body.classList.remove('hist-open');toast('restored as draft — publish to make it live');
+    }catch(e){toast('could not restore: '+e.message);}
+  });
+};
+
+/* github connection */
+const cloudEl=document.getElementById('cloud'),signBtn=document.getElementById('signin');
+async function refreshUser(){
+  if(!Store.configured()){
+    cloudEl.textContent='no repo set in data/config.js';signBtn.style.display='none';return;
+  }
+  const u=await Store.whoami();
+  if(u){
+    cloudEl.textContent='github · '+u.login;cloudEl.classList.add('on');
+    signBtn.textContent='disconnect';
+    signBtn.onclick=()=>{if(confirm('Forget the token in this browser?')){Store.setToken('');refreshUser();}};
+  }else{
+    cloudEl.textContent='not connected — drafts stay in this browser';cloudEl.classList.remove('on');
+    signBtn.textContent='connect github';
+    signBtn.onclick=async()=>{
+      const t=prompt('Paste a GitHub token with Contents: read and write on '+window.GITHUB_REPO+'\n\ngithub.com → Settings → Developer settings → Fine-grained tokens');
+      if(!t)return;
+      Store.setToken(t.trim());
+      const who=await Store.whoami();
+      if(who){toast('connected as '+who.login);}else{Store.setToken('');toast('that token did not work');}
+      refreshUser();
+    };
+  }
+}
+refreshUser();
+
+addEventListener('keydown',e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key==='s'){e.preventDefault();save();}
+  if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){e.preventDefault();publish();}
+});
+(async()=>{await pull();buildTabs();render();markDirty();})();
+</script>
+</body>
+</html>

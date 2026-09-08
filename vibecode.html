@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mikael — code</title>
+<meta name="description" content="Small tools I built to solve problems I actually had.">
+<meta property="og:title" content="mikael — code">
+<meta property="og:description" content="Small tools I built to solve problems I actually had.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#C2432B">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%23C2432B%27/%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%275%27 fill=%27%23F0E6D3%27/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400&family=Fraunces:ital,opsz,wght@1,9..144,400&family=Noto+Sans+Ethiopic:wght@400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--brick:#C2432B;--bone:#F0E6D3;--ink:#1A1310;
+--font-g:'Space Grotesk',system-ui,sans-serif;--font-m:'Space Mono',monospace;--font-v:'Fraunces',serif;--font-e:'Noto Sans Ethiopic',sans-serif}
+body{font-family:var(--font-g);background:var(--bone);color:var(--ink);min-height:100vh;
+  background-image:radial-gradient(rgba(26,19,16,.13) 1.3px,transparent 1.3px);background-size:44px 44px}
+
+.topbar{position:fixed;top:0;left:0;right:0;height:52px;z-index:55;display:flex;align-items:center;justify-content:space-between;padding:0 22px;pointer-events:none}
+.topbar>*{pointer-events:auto}
+.topbar::before{content:"";position:absolute;inset:0;background:linear-gradient(var(--bone) 62%,transparent);z-index:-1}
+.identity{display:flex;font-weight:500;font-size:17px;letter-spacing:.16em;text-transform:lowercase;color:var(--brick);text-decoration:none}
+.identity span{display:inline-block;position:relative}
+.identity .seed{position:absolute;left:50%;top:3.5px;width:2.4px;height:2.4px;border-radius:50%;background:var(--ink);transform:translateX(-50%);box-shadow:0 0 0 1.2px var(--bone)}
+.identity:hover span{animation:wave .9s ease-in-out}
+.identity:hover span:nth-child(1){animation-delay:0s}.identity:hover span:nth-child(2){animation-delay:.06s}.identity:hover span:nth-child(3){animation-delay:.12s}
+.identity:hover span:nth-child(4){animation-delay:.18s}.identity:hover span:nth-child(5){animation-delay:.24s}.identity:hover span:nth-child(6){animation-delay:.30s}
+@keyframes wave{0%,100%{transform:translateY(0)}35%{transform:translateY(-5px)}70%{transform:translateY(2px)}}
+.topbar-right{display:flex;align-items:center;gap:16px}
+.numeral{font-family:var(--font-e);font-size:20px;color:var(--ink);opacity:.75}
+.arrows{display:flex;gap:10px}
+.arrows a{display:block;width:22px;height:12px}
+.arrows svg{width:100%;height:100%;stroke:var(--ink);stroke-width:1.2;fill:none;stroke-linecap:round;stroke-linejoin:round;opacity:.4;transition:opacity .2s,transform .25s}
+.arrows a:hover svg{opacity:1;stroke:var(--brick)}
+.arrows a.next:hover svg{transform:translateX(2px)}
+.arrows a.prev:hover svg{transform:translateX(-2px)}
+
+.wrap{max-width:1080px;margin:0 auto;padding:120px 24px 120px}
+.lede{font-family:var(--font-v);font-style:italic;font-size:clamp(22px,3.2vw,32px);line-height:1.25;max-width:26ch;
+  opacity:0;transform:translateY(16px);animation:rise .8s .15s cubic-bezier(.2,.7,.2,1) forwards}
+.lede em{font-style:italic;color:var(--brick)}
+@keyframes rise{to{opacity:1;transform:translateY(0)}}
+.stack{font-family:var(--font-m);font-size:11px;letter-spacing:.1em;text-transform:lowercase;color:rgba(26,19,16,.6);margin-top:18px;
+  opacity:0;animation:rise .8s .35s cubic-bezier(.2,.7,.2,1) forwards}
+
+.projects{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:24px;margin-top:52px}
+.proj{position:relative;padding:24px 26px 24px;color:var(--ink);display:block;
+  opacity:0;transform:translateY(18px);animation:rise .7s cubic-bezier(.2,.7,.2,1) forwards;transition:transform .3s cubic-bezier(.34,1.4,.64,1)}
+.proj:hover{transform:translateY(-4px) rotate(-.4deg)}
+.proj .shot{position:relative;width:100%;aspect-ratio:16/11;margin-bottom:18px;overflow:hidden;border:1.5px solid rgba(26,19,16,.25);border-radius:14px;
+  display:flex;align-items:center;justify-content:center;background:#fff}
+.proj .shot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;display:block;opacity:0;transition:opacity .45s ease}
+.proj .shot img.on{opacity:1}
+.proj .shot .dots{position:absolute;right:9px;bottom:9px;z-index:2;display:flex;gap:5px}
+.proj .shot .dots i{width:5px;height:5px;border-radius:50%;background:rgba(26,19,16,.3);transition:background .25s}
+.proj .shot .dots i.on{background:var(--brick)}
+.proj .shot .ph{display:none;font-family:var(--font-m);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(26,19,16,.3)}
+.proj .shot.empty .ph{display:block}
+.proj .links{display:flex;gap:14px;margin-top:10px}
+.proj .links a{font-family:var(--font-m);font-size:9.5px;letter-spacing:.1em;color:var(--brick);text-decoration:none;border-bottom:1px solid var(--brick)}
+.proj .links a:hover{color:var(--ink);border-color:var(--ink)}
+.proj .sh{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+.proj:hover .sh path.a{stroke:var(--brick)}
+.proj .in{position:relative;z-index:1}
+.proj .tag{font-family:var(--font-m);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--brick)}
+.proj h2{font-weight:700;font-size:24px;letter-spacing:-.01em;margin-top:8px}
+.proj .row{font-size:13.5px;line-height:1.55;color:rgba(26,19,16,.75);margin-top:12px;padding-left:52px;position:relative}
+.proj .row b{position:absolute;left:0;top:2px;font-family:var(--font-m);font-size:8.5px;font-weight:400;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--brick)}
+.proj .access{font-family:var(--font-m);font-size:9px;letter-spacing:.1em;text-transform:lowercase;color:rgba(26,19,16,.5);
+  margin-top:16px;display:flex;align-items:center;gap:6px}
+.proj .access::before{content:"";width:5px;height:5px;border-radius:50%;background:rgba(26,19,16,.35);flex:none}
+.proj .go{font-family:var(--font-m);font-size:9.5px;letter-spacing:.1em;color:var(--brick);margin-top:8px;display:inline-block}
+.proj .num{position:absolute;top:14px;right:20px;z-index:1;font-family:var(--font-e);font-size:15px;color:var(--brick);opacity:.55}
+
+.foot{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:70px}
+.foot svg.fig{width:110px;opacity:.16}
+.foot a{font-family:var(--font-m);font-size:11px;letter-spacing:.08em;color:var(--brick);text-decoration:none;border-bottom:1px solid var(--brick)}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important}
+}
+
+/* page transition */
+.wipe{position:fixed;inset:0;background:var(--brick);z-index:200;transform:translateY(100%);pointer-events:none}
+.wipe.in{animation:wipeIn .42s cubic-bezier(.7,0,.3,1) forwards}
+.wipe.out{transform:translateY(0);animation:wipeOut .5s .05s cubic-bezier(.7,0,.3,1) forwards}
+@keyframes wipeIn{to{transform:translateY(0)}}
+@keyframes wipeOut{to{transform:translateY(-100%)}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="identity" href="index.html"><span>m</span><span>ı<i class="seed"></i></span><span>k</span><span>a</span><span>e</span><span>l</span></a>
+  <div class="topbar-right">
+    <div class="arrows">
+      <a class="prev" href="work.html" aria-label="previous"><svg viewBox="0 0 22 12"><path d="M20,6.2 C14,5.9 8,6.3 2,6"/><path d="M5.5,3.2 C4.2,4.3 3,5.2 2,6 C3.1,6.9 4.3,8 5.5,9.1"/></svg></a>
+      <a class="next" href="medium.html" aria-label="next"><svg viewBox="0 0 22 12"><path d="M2,5.8 C8,6.1 14,5.7 20,6"/><path d="M16.5,2.9 C17.8,4 19,5.1 20,6 C18.9,6.9 17.7,8.1 16.5,9.2"/></svg></a>
+    </div>
+    <div class="numeral" aria-label="3">፫</div>
+  </div>
+</div>
+
+<div class="wrap">
+  <p class="lede">Working out what I can build myself, one small tool at a time.</p>
+  <p class="stack">html · react · next.js · typescript · supabase · vercel</p>
+  <div class="projects" id="projects"></div>
+  <div class="foot" id="foot"></div>
+</div>
+
+<script src="data/code-projects.js"></script>
+<script src="data/config.js"></script>
+<script>
+function boot(){
+const DEFAULT_PROJECTS=[
+  {tag:'react · supabase · slack',name:'kastelija',
+   need:'The office plants kept dying and nobody could remember whose turn it was.',
+   what:'Every plant has its own dose and cycle — 400 ml every 7 days, 150 ml every 28. The app counts down, logs who watered what and when, and a Slack bot posts the status every Monday at nine with a leaderboard.',
+   learned:'Placeholder — write what you actually took away from this one.',
+   shots:[],
+   links:[{t:'source ↗',u:'https://github.com/mikaelkorpi/kastelija-app'}],
+   access:'internal · ilmiö sso'},
+  {tag:'next.js · typescript',name:'paikalla',
+   need:'Nobody knew who was coming to the office, and the shared spreadsheet had stopped being funny.',
+   what:'A week at a glance, five columns, names. Then it grew an Office Quest: XP, levels from Office Curious to Desk Finder, and a Slack post every Monday morning with a button to log your days.',
+   learned:'Placeholder — write what you actually took away from this one.',
+   shots:[],
+   links:[{t:'source ↗',u:'https://github.com/mikaelkorpi/paikalla'}],
+   access:'internal · ilmiö sso'},
+  {tag:'html · vanilla js',name:'kledyu',
+   need:'A wishlist that looked like a moodboard instead of a list.',
+   what:'An infinite canvas you drag around. Each card is a piece — who made it, the reference number, why it stuck. Everything lives in the browser: no accounts, no backend, no database.',
+   learned:'Placeholder — write what you actually took away from this one.',
+   shots:[],
+   links:[{t:'open it ↗',u:'kledyu.html'},{t:'source ↗',u:'https://github.com/mikaelkorpi/kledyu'}],
+   access:'public'},
+  {tag:'html',name:'journey_app',
+   need:'A candidate journey needed to be mapped out, and it needed to be done that evening.',
+   what:'One file, one idea. Rough, but it did the job it was made for.',
+   learned:'Placeholder — write what you actually took away from this one.',
+   shots:[],
+   links:[{t:'source ↗',u:'https://github.com/mikaelkorpi/journey_app'}],
+   access:'internal · ilmiö sso'},
+];
+const PROJECTS=window.CODE_PROJECTS&&window.CODE_PROJECTS.length?window.CODE_PROJECTS:DEFAULT_PROJECTS;
+const GEEZ=['\u1369','\u136A','\u136B','\u136C'];
+function roughRect(w,h,r,amp){
+  const F=n=>n.toFixed(1),j=()=>(Math.random()-.5)*amp*2;
+  const edge=(x1,y1,x2,y2)=>{let d='';for(let i=1;i<=4;i++){const t=i/4,pt=(i-.5)/4;
+    d+=` Q${F(x1+(x2-x1)*pt+j())},${F(y1+(y2-y1)*pt+j())} ${F(x1+(x2-x1)*t+j())},${F(y1+(y2-y1)*t+j())}`;}return d;};
+  let d=`M${F(r)},${F(j())}`;
+  d+=edge(r,0,w-r,0)+` Q${F(w+j())},${F(j())} ${F(w+j())},${F(r)}`;
+  d+=edge(w,r,w,h-r)+` Q${F(w+j())},${F(h+j())} ${F(w-r)},${F(h+j())}`;
+  d+=edge(w-r,h,r,h)+` Q${F(j())},${F(h+j())} ${F(j())},${F(h-r)}`;
+  d+=edge(0,h-r,0,r)+` Q${F(j())},${F(j())} ${F(r)},${F(j())} Z`;
+  return d;
+}
+const shape=(w,h)=>`<svg class="sh" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+  <path class="a" d="${roughRect(w,h,26,3)}" fill="none" stroke="#1A1310" stroke-width="2"/>
+  <path d="${roughRect(w,h,26,4.5)}" fill="none" stroke="#C2432B" stroke-width="1.1" opacity=".4"/></svg>`;
+
+const box=document.getElementById('projects');
+PROJECTS.forEach((p,i)=>{
+  const a=document.createElement('div');a.className='proj';
+  a.style.animationDelay=(.45+i*.12)+'s';
+  const shots=p.shots||[];
+  a.innerHTML=shape(340,540)+`<span class="num">${GEEZ[i%4]}</span>
+    <div class="in">
+      <div class="shot${shots.length?'':' empty'}">
+        ${shots.map((sr,si)=>`<img src="${sr}" class="${si?'':'on'}" alt="">`).join('')}
+        <span class="ph">screenshot</span>
+        ${shots.length>1?`<span class="dots">${shots.map((_,si)=>`<i class="${si?'':'on'}"></i>`).join('')}</span>`:''}
+      </div>
+      <p class="tag">${p.tag}</p><h2>${p.name}</h2>
+      <p class="row"><b>need</b>${p.need}</p>
+      <p class="row"><b>what</b>${p.what}</p>
+      <p class="row"><b>learned</b>${p.learned}</p>
+      <span class="access">${p.access}</span>
+      <span class="links">${p.links.map(l=>`<a href="${l.u}" ${l.u.startsWith('http')?'target="_blank" rel="noopener"':''}>${l.t}</a>`).join('')}</span>
+    </div>`;
+  box.appendChild(a);
+  const imgs=[...a.querySelectorAll('.shot img')],dots=[...a.querySelectorAll('.dots i')];
+  if(imgs.length>1){
+    let n=0;setInterval(()=>{
+      n=(n+1)%imgs.length;
+      imgs.forEach((im,ix)=>im.classList.toggle('on',ix===n));
+      dots.forEach((d,ix)=>d.classList.toggle('on',ix===n));
+    },3200);
+  }
+});
+
+(function(){
+  const j=k=>(Math.random()-.5)*k,f=n=>n.toFixed(1);
+  const S=[[[64,64],[61,52],[64,42]],[[70,33],[80,26],[92,27],[102,24]],[[108,25],[120,29],[133,38],[138,56]],
+    [[66,70],[64,84],[72,100],[86,112]],[[90,114],[100,115],[110,111]],[[135,72],[134,88],[128,100]],
+    [[104,64],[102,78],[100,92],[93,94]],[[78,66],[85,62],[92,64]],
+    [[80,74],[86,70],[92,74],[86,77],[80,74]],[[112,60],[119,57],[125,59]],
+    [[114,70],[118,66],[122,70],[118,74],[114,70]],[[93,104],[100,106],[108,102]],
+    [[97,117],[96,124],[95,131]],[[46,186],[56,156],[74,141],[94,136]],[[114,136],[132,142],[148,158],[154,186]]];
+  const path=p=>{const q=p.map(([x,y])=>[x+j(3),y+j(3)]);let d=`M${f(q[0][0])},${f(q[0][1])}`,i=1;
+    for(;i+2<q.length;i+=3)d+=` C${f(q[i][0])},${f(q[i][1])} ${f(q[i+1][0])},${f(q[i+1][1])} ${f(q[i+2][0])},${f(q[i+2][1])}`;
+    const r=q.length-i;if(r===1)d+=` L${f(q[i][0])},${f(q[i][1])}`;if(r===2)d+=` Q${f(q[i][0])},${f(q[i][1])} ${f(q[i+1][0])},${f(q[i+1][1])}`;return d;};
+  document.getElementById('foot').innerHTML=
+    `<svg class="fig" viewBox="0 0 200 200" fill="none" stroke="#1A1310" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">`
+    +S.map(p=>`<path d="${path(p)}"/>`).join('')
+    +`<circle cx="86" cy="74" r="3.2" fill="#1A1310"/><circle cx="118" cy="70" r="2.8" fill="#1A1310"/></svg>
+    <a href="https://github.com/mikaelkorpi" target="_blank" rel="noopener">github.com/mikaelkorpi ↗</a>`;
+})();
+
+}
+/* the shipped data file is the content; a local draft only shows for you */
+(function(){
+  try{
+    const d=JSON.parse(localStorage.getItem('mikael_draft_code')||'null');
+    if(d&&d.length)window.CODE_PROJECTS=d;
+  }catch(e){}
+  boot();
+})();
+</script>
+<script>
+/* page transition: brick sweeps across, then the next page reveals under it */
+(function(){
+  const w=document.createElement('div');w.className='wipe out';document.body.appendChild(w);
+  addEventListener('pageshow',e=>{if(e.persisted){w.className='wipe out';}});
+  document.addEventListener('click',e=>{
+    const a=e.target.closest('a');
+    if(!a)return;
+    const href=a.getAttribute('href')||'';
+    if(a.target==='_blank'||href.startsWith('http')||href.startsWith('mailto')||href.startsWith('#')||e.metaKey||e.ctrlKey)return;
+    e.preventDefault();
+    w.className='wipe in';
+    setTimeout(()=>location.href=href,400);
+  });
+})();
+/* the light shifts through the day */
+(function(){
+  const h=new Date().getHours();
+  const warm = h>=19||h<7 ? '#EDE0C9' : h>=16 ? '#F0E5D0' : '#F0E6D3';
+  document.documentElement.style.setProperty('--bone',warm);
+})();
+</script>
+</body>
+</html>

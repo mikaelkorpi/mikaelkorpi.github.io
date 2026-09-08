@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mikael — thoughts</title>
+<meta name="description" content="Writing that does not fit anywhere else.">
+<meta property="og:title" content="mikael — thoughts">
+<meta property="og:description" content="Writing that does not fit anywhere else.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#C2432B">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%23C2432B%27/%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%275%27 fill=%27%23F0E6D3%27/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Noto+Sans+Ethiopic:wght@400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--brick:#C2432B;--bone:#F0E6D3;--ink:#1A1310;
+--font-g:'Space Grotesk',system-ui,sans-serif;--font-m:'Space Mono',monospace;--font-v:'Fraunces',serif;--font-e:'Noto Sans Ethiopic',sans-serif}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-g);background:var(--bone);color:var(--ink);min-height:100vh;
+  background-image:radial-gradient(rgba(26,19,16,.13) 1.3px,transparent 1.3px);background-size:44px 44px}
+
+.topbar{position:fixed;top:0;left:0;right:0;height:52px;z-index:55;display:flex;align-items:center;justify-content:space-between;padding:0 22px;pointer-events:none}
+.topbar>*{pointer-events:auto}
+.topbar::before{content:"";position:absolute;inset:0;background:linear-gradient(var(--bone) 62%,transparent);z-index:-1}
+.identity{display:flex;font-weight:500;font-size:17px;letter-spacing:.16em;text-transform:lowercase;color:var(--brick);text-decoration:none}
+.identity span{display:inline-block;position:relative}
+.identity .seed{position:absolute;left:50%;top:3.5px;width:2.4px;height:2.4px;border-radius:50%;background:var(--ink);transform:translateX(-50%);box-shadow:0 0 0 1.2px var(--bone)}
+.identity:hover span{animation:wave .9s ease-in-out}
+.identity:hover span:nth-child(1){animation-delay:0s}.identity:hover span:nth-child(2){animation-delay:.06s}.identity:hover span:nth-child(3){animation-delay:.12s}
+.identity:hover span:nth-child(4){animation-delay:.18s}.identity:hover span:nth-child(5){animation-delay:.24s}.identity:hover span:nth-child(6){animation-delay:.30s}
+@keyframes wave{0%,100%{transform:translateY(0)}35%{transform:translateY(-5px)}70%{transform:translateY(2px)}}
+.topbar-right{display:flex;align-items:center;gap:16px}
+.numeral{font-family:var(--font-e);font-size:20px;color:var(--ink);opacity:.75}
+.arrows{display:flex;gap:10px}
+.arrows a{display:block;width:22px;height:12px}
+.arrows svg{width:100%;height:100%;stroke:var(--ink);stroke-width:1.2;fill:none;stroke-linecap:round;stroke-linejoin:round;opacity:.4;transition:opacity .2s,transform .25s}
+.arrows a:hover svg{opacity:1;stroke:var(--brick)}
+.arrows a.next:hover svg{transform:translateX(2px)}
+.arrows a.prev:hover svg{transform:translateX(-2px)}
+
+/* ── the spine ── */
+.index{position:relative;max-width:1060px;margin:0 auto;padding:118px 24px 140px;min-height:100vh}
+.spine{position:absolute;left:50%;top:96px;bottom:96px;width:2px;transform:translateX(-1px);overflow:visible}
+.spine path{stroke:var(--ink);stroke-width:1.6;fill:none;opacity:.5;stroke-dasharray:2600;stroke-dashoffset:2600;animation:trace 2.4s .2s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes trace{to{stroke-dashoffset:0}}
+
+.entry{position:relative;width:50%;padding:0 46px;margin-bottom:74px;opacity:0;transform:translateY(20px);
+  animation:rise .7s cubic-bezier(.2,.7,.2,1) forwards;cursor:pointer}
+@keyframes rise{to{opacity:1;transform:translateY(0)}}
+.entry.l{text-align:right;margin-right:50%}
+.entry.r{margin-left:50%}
+.entry .node{position:absolute;top:12px;width:11px;height:11px;border-radius:50%;background:var(--bone);border:1.6px solid var(--ink);transition:background .2s,border-color .2s,transform .25s}
+.entry.l .node{right:-6px}
+.entry.r .node{left:-6px}
+.entry:hover .node{background:var(--brick);border-color:var(--brick);transform:scale(1.35)}
+.entry .date{font-family:var(--font-m);font-size:10.5px;letter-spacing:.12em;text-transform:lowercase;color:var(--brick)}
+.entry h2{font-family:var(--font-v);font-style:italic;font-weight:400;font-size:clamp(24px,3.2vw,34px);line-height:1.15;margin-top:10px;transition:color .2s}
+.entry:hover h2{color:var(--brick)}
+.entry p{font-size:14.5px;line-height:1.65;color:rgba(26,19,16,.68);margin-top:10px;max-width:34ch;display:inline-block}
+.entry .mins{font-family:var(--font-m);font-size:9.5px;letter-spacing:.1em;color:rgba(26,19,16,.45);margin-top:12px;display:block}
+
+/* ── reading view ── */
+.reader{position:fixed;inset:0;z-index:70;background:var(--bone);overflow-y:auto;
+  opacity:0;pointer-events:none;transition:opacity .35s ease;
+  background-image:radial-gradient(rgba(26,19,16,.13) 1.3px,transparent 1.3px);background-size:44px 44px}
+body.reading .reader{opacity:1;pointer-events:auto}
+body.reading{overflow:hidden}
+.reader-in{max-width:660px;margin:0 auto;padding:120px 28px 180px;transform:translateY(14px);transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+body.reading .reader-in{transform:translateY(0)}
+.reader .date{font-family:var(--font-m);font-size:10.5px;letter-spacing:.14em;text-transform:lowercase;color:var(--brick)}
+.reader h1{font-family:var(--font-v);font-style:italic;font-weight:400;font-size:clamp(34px,5.6vw,52px);line-height:1.08;margin-top:14px}
+.reader .rule{width:54px;height:1.6px;background:var(--brick);margin:26px 0 30px}
+.reader .body p{font-family:var(--font-v);font-weight:400;font-size:19px;line-height:1.72;margin-bottom:22px}
+.reader .body p:first-of-type::first-letter{font-size:62px;line-height:.82;float:left;padding:6px 12px 0 0;color:var(--brick);font-weight:600}
+.reader .body h2{font-family:var(--font-g);font-weight:700;font-size:19px;letter-spacing:-.01em;margin:34px 0 12px}
+.reader .body blockquote{font-family:var(--font-v);font-style:italic;font-size:21px;line-height:1.5;margin:28px 0;padding-left:18px;border-left:2px solid var(--brick)}
+.reader .body ul{margin:0 0 22px 0;padding:0;list-style:none}
+.reader .body li{font-family:var(--font-v);font-size:18px;line-height:1.65;padding-left:20px;position:relative;margin-bottom:8px}
+.reader .body li::before{content:"";position:absolute;left:0;top:.72em;width:5px;height:5px;border-radius:50%;background:var(--brick)}
+.reader .body figure{margin:30px 0}
+.reader .body figure .frame{width:100%;aspect-ratio:16/10;border:1.5px solid rgba(26,19,16,.28);border-radius:14px;
+  display:flex;align-items:center;justify-content:center;overflow:hidden}
+.reader .body figure img{width:100%;height:100%;object-fit:cover;display:block}
+.reader .body figure .ph{font-family:var(--font-m);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(26,19,16,.3)}
+.reader .body figcaption{font-family:var(--font-m);font-size:10px;letter-spacing:.06em;color:rgba(26,19,16,.5);margin-top:9px}
+.reader .body em.pull{display:block;font-family:var(--font-g);font-style:normal;font-weight:700;font-size:26px;line-height:1.2;
+  letter-spacing:-.01em;color:var(--brick);margin:34px 0}
+.reader .end{display:block;width:9px;height:9px;border-radius:50%;background:var(--brick);margin:44px auto 0}
+
+/* progress tiles: the spine becomes a column that fills as you read */
+.progress{position:fixed;left:26px;top:50%;transform:translateY(-50%);z-index:72;display:flex;flex-direction:column;gap:5px;opacity:0;transition:opacity .4s ease}
+body.reading .progress{opacity:1}
+.progress i{width:9px;height:9px;border:1.3px solid rgba(26,19,16,.4);background:transparent;transition:background .3s ease,border-color .3s ease}
+.progress i.on{background:var(--brick);border-color:var(--brick)}
+.reader-close{position:fixed;top:14px;right:22px;z-index:73;background:none;border:none;cursor:pointer;
+  font-family:var(--font-m);font-size:10px;letter-spacing:.12em;text-transform:lowercase;color:var(--brick);opacity:0;transition:opacity .3s}
+body.reading .reader-close{opacity:1}
+.reader-close:hover{text-decoration:underline}
+.reader-link{position:fixed;top:14px;right:78px;z-index:73;background:none;border:none;cursor:pointer;
+  font-family:var(--font-m);font-size:10px;letter-spacing:.12em;text-transform:lowercase;color:var(--brick);opacity:0;transition:opacity .3s}
+body.reading .reader-link{opacity:.65}
+.reader-link:hover{opacity:1;text-decoration:underline}
+
+/* the figure sits at the foot of the spine */
+.foot{position:relative;display:flex;justify-content:center;padding-bottom:20px}
+.foot svg{width:120px;opacity:.16}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important}
+}
+
+@media (max-width:720px){
+  .index{padding:104px 20px 120px}
+  .spine{left:14px;transform:none}
+  .entry,.entry.l,.entry.r{width:100%;margin:0 0 52px 0;padding:0 0 0 40px;text-align:left}
+  .entry.l .node,.entry.r .node{left:8px;right:auto}
+  .entry p{max-width:none}
+  .progress{left:12px;gap:4px}
+  .progress i{width:7px;height:7px}
+  .reader-in{padding:96px 22px 140px}
+}
+
+/* page transition */
+.wipe{position:fixed;inset:0;background:var(--brick);z-index:200;transform:translateY(100%);pointer-events:none}
+.wipe.in{animation:wipeIn .42s cubic-bezier(.7,0,.3,1) forwards}
+.wipe.out{transform:translateY(0);animation:wipeOut .5s .05s cubic-bezier(.7,0,.3,1) forwards}
+@keyframes wipeIn{to{transform:translateY(0)}}
+@keyframes wipeOut{to{transform:translateY(-100%)}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="identity" href="index.html"><span>m</span><span>ı<i class="seed"></i></span><span>k</span><span>a</span><span>e</span><span>l</span></a>
+  <div class="topbar-right">
+    <div class="arrows">
+      <a class="prev" href="medium.html" aria-label="previous"><svg viewBox="0 0 22 12"><path d="M20,6.2 C14,5.9 8,6.3 2,6"/><path d="M5.5,3.2 C4.2,4.3 3,5.2 2,6 C3.1,6.9 4.3,8 5.5,9.1"/></svg></a>
+      <a class="next" href="index.html" aria-label="next"><svg viewBox="0 0 22 12"><path d="M2,5.8 C8,6.1 14,5.7 20,6"/><path d="M16.5,2.9 C17.8,4 19,5.1 20,6 C18.9,6.9 17.7,8.1 16.5,9.2"/></svg></a>
+    </div>
+    <div class="numeral" aria-label="5">፭</div>
+  </div>
+</div>
+
+<div class="index" id="index">
+  <svg class="spine" id="spine" preserveAspectRatio="none"></svg>
+  <div id="entries"></div>
+  <div class="foot" id="foot"></div>
+</div>
+
+<div class="reader" id="reader"><div class="reader-in" id="reader-in"></div></div>
+<button class="reader-link" id="reader-link">copy link</button>
+<button class="reader-close" id="reader-close">close</button>
+<div class="progress" id="progress"></div>
+
+<script src="data/thoughts-posts.js"></script>
+<script src="data/config.js"></script>
+<script>
+function boot(){
+const DEFAULT_POSTS= [
+  {n:'01',date:'syyskuu 2026',title:'Otsikko tulee tähän',mins:'4 min',
+   lead:'Yhden lauseen sisäänheitto joka kertoo mistä on kyse. Noin tämän mittainen.',
+   body:[
+     '<p>Ensimmäinen kappale. Anfangi on tiilenpunainen ja toimii vain jos kappale alkaa kirjaimella. Kolmesta viiteen riviä näyttää oikealta.</p>',
+     '<p>Toinen kappale. Fraunces, 19 pikseliä, 660 pikselin palsta, väljä rivinväli — tätä on tarkoitus lukea rauhassa eikä silmäillä.</p>',
+     '<h2>Väliotsikko</h2>',
+     '<p>Väliotsikon jälkeinen kappale. Väliotsikko on Space Grotesk lihavana, jotta se erottuu leipätekstin seriffistä.</p>',
+     '<blockquote>Sitaatti tiilenpunaisen viivan takana. Tähän se lause jonka haluat jäävän mieleen.</blockquote>',
+     '<p>Kappale sitaatin jälkeen.</p>',
+     '<ul><li>Listan ensimmäinen kohta</li><li>Toinen kohta</li><li>Kolmas kohta</li></ul>',
+     '<figure><div class="frame"><span class="ph">kuva</span></div><figcaption>Kuvateksti. Korvaa div.frame sisältö img-elementillä.</figcaption></figure>',
+     '<em class="pull">Nostolause isolla tiilenpunaisella, kun tarvitset tauon.</em>',
+     '<p>Viimeinen kappale. Vasemman reunan tiilet täyttyvät sitä mukaa kun vierität — tässä pituudessa ne ehtivät täyttyä kokonaan.</p>'
+   ]},
+  {n:'02',date:'elokuu 2026',title:'Lyhyempi otsikko',mins:'2 min',
+   lead:'Toinen sisäänheitto, hieman lyhyempi kuin ensimmäinen.',
+   body:['<p>Kappale yksi.</p>','<p>Kappale kaksi.</p>']},
+  {n:'03',date:'heinäkuu 2026',title:'Kolmas merkintä selkärangassa',mins:'4 min',
+   lead:'Pidempi sisäänheitto joka menee kahdelle riville, jotta näkee miltä se näyttää.',
+   body:['<p>Kappale yksi.</p>','<p>Kappale kaksi.</p>','<p>Kappale kolme.</p>','<p>Kappale neljä.</p>']},
+  {n:'04',date:'kesäkuu 2026',title:'Neljäs',mins:'2 min',
+   lead:'Lyhyt.',
+   body:['<p>Kappale yksi.</p>','<p>Kappale kaksi.</p>']},
+  {n:'05',date:'toukokuu 2026',title:'Viides merkintä',mins:'3 min',
+   lead:'Viimeinen sisäänheitto ennen kuin selkäranka päättyy hahmoon.',
+   body:['<p>Kappale yksi.</p>','<p>Kappale kaksi.</p>','<p>Kappale kolme.</p>']},
+];
+const POSTS=(window.THOUGHTS_POSTS&&window.THOUGHTS_POSTS.length)?window.THOUGHTS_POSTS:DEFAULT_POSTS;
+
+/* spine: one long hand-drawn line */
+(function(){
+  const sp=document.getElementById('spine');
+  const H=1400,j=()=>(Math.random()-.5)*7;
+  sp.setAttribute('viewBox',`0 0 40 ${H}`);
+  let d=`M20,0`;
+  for(let y=60;y<=H;y+=60)d+=` Q${(20+j()).toFixed(1)},${y-30} ${(20+j()).toFixed(1)},${y}`;
+  sp.innerHTML=`<path d="${d}"/>`;
+})();
+
+/* entries */
+const wrap=document.getElementById('entries');
+POSTS.forEach((p,i)=>{
+  const e=document.createElement('div');
+  e.className='entry';
+  e.style.animationDelay=(.25+i*.12)+'s';
+  e.innerHTML=`<span class="node"></span>
+    <p class="date">${p.n} — ${p.date}</p>
+    <h2>${p.title}</h2>
+    <p>${p.lead}</p>
+    <span class="mins">${p.mins}</span>`;
+  e.addEventListener('click',()=>open_(p));
+  wrap.appendChild(e);
+});
+
+/* alternate sides among whatever is visible */
+function relayout(){
+  [...wrap.children].forEach((e,n)=>{e.classList.remove('l','r');e.classList.add(n%2?'r':'l');});
+}
+relayout();
+
+/* the figure at the foot */
+(function(){
+  const j=k=>(Math.random()-.5)*k,f=n=>n.toFixed(1);
+  const S=[[[64,64],[61,52],[64,42]],[[70,33],[80,26],[92,27],[102,24]],[[108,25],[120,29],[133,38],[138,56]],
+    [[66,70],[64,84],[72,100],[86,112]],[[90,114],[100,115],[110,111]],[[135,72],[134,88],[128,100]],
+    [[104,64],[102,78],[100,92],[93,94]],[[78,66],[85,62],[92,64]],
+    [[80,74],[86,70],[92,74],[86,77],[80,74]],[[112,60],[119,57],[125,59]],
+    [[114,70],[118,66],[122,70],[118,74],[114,70]],[[93,104],[100,106],[108,102]],
+    [[97,117],[96,124],[95,131]],[[46,186],[56,156],[74,141],[94,136]],[[114,136],[132,142],[148,158],[154,186]]];
+  const path=p=>{const q=p.map(([x,y])=>[x+j(3),y+j(3)]);let d=`M${f(q[0][0])},${f(q[0][1])}`,i=1;
+    for(;i+2<q.length;i+=3)d+=` C${f(q[i][0])},${f(q[i][1])} ${f(q[i+1][0])},${f(q[i+1][1])} ${f(q[i+2][0])},${f(q[i+2][1])}`;
+    const r=q.length-i;if(r===1)d+=` L${f(q[i][0])},${f(q[i][1])}`;if(r===2)d+=` Q${f(q[i][0])},${f(q[i][1])} ${f(q[i+1][0])},${f(q[i+1][1])}`;return d;};
+  document.getElementById('foot').innerHTML=
+    `<svg viewBox="0 0 200 200" fill="none" stroke="#1A1310" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">`
+    +S.map(p=>`<path d="${path(p)}"/>`).join('')
+    +`<circle cx="86" cy="74" r="3.2" fill="#1A1310"/><circle cx="118" cy="70" r="2.8" fill="#1A1310"/></svg>`;
+})();
+
+/* reading */
+const reader=document.getElementById('reader'),rin=document.getElementById('reader-in');
+const prog=document.getElementById('progress');
+const TILES=14;
+prog.innerHTML=Array.from({length:TILES},()=>'<i></i>').join('');
+const tiles=[...prog.querySelectorAll('i')];
+
+function slug(p){return (p.n||'').replace(/[^0-9a-z]/gi,'')||encodeURIComponent(p.title||'');}
+function open_(p,silent){
+  rin.innerHTML=`<p class="date">${p.n} — ${p.date} · ${p.mins}</p>
+    <h1>${p.title}</h1><div class="rule"></div>
+    <div class="body">${p.body.join('')}</div>
+    <span class="end"></span>`;
+  reader.scrollTop=0;
+  document.body.classList.add('reading');
+  update();
+  if(!silent)history.pushState({post:slug(p)},'','#'+slug(p));
+}
+function close_(silent){
+  document.body.classList.remove('reading');
+  tiles.forEach(t=>t.classList.remove('on'));
+  if(!silent&&location.hash)history.pushState({},'',location.pathname);
+}
+function fromHash(silent){
+  const h=decodeURIComponent(location.hash.replace('#',''));
+  const p=POSTS.find(x=>slug(x)===h);
+  if(p)open_(p,true); else close_(true);
+}
+addEventListener('popstate',()=>fromHash(true));
+addEventListener('load',()=>{if(location.hash)fromHash(true);});
+document.getElementById('reader-close').addEventListener('click',()=>close_());
+document.getElementById('reader-link').addEventListener('click',e=>{
+  navigator.clipboard.writeText(location.href).then(()=>{
+    e.target.textContent='copied';setTimeout(()=>e.target.textContent='copy link',1600);
+  });
+});
+addEventListener('keydown',e=>{if(e.key==='Escape')close_();});
+if(location.hash)setTimeout(()=>fromHash(true),80);
+
+function update(){
+  const max=reader.scrollHeight-reader.clientHeight;
+  const r=max>0?reader.scrollTop/max:1;
+  const n=Math.round(r*TILES);
+  tiles.forEach((t,i)=>t.classList.toggle('on',i<n));
+}
+reader.addEventListener('scroll',update);
+
+}
+/* the shipped data file is the content; a local draft only shows for you */
+(function(){
+  try{
+    const d=JSON.parse(localStorage.getItem('mikael_draft_thoughts')||'null');
+    if(d&&d.length)window.THOUGHTS_POSTS=d;
+  }catch(e){}
+  boot();
+})();
+</script>
+<script>
+/* page transition: brick sweeps across, then the next page reveals under it */
+(function(){
+  const w=document.createElement('div');w.className='wipe out';document.body.appendChild(w);
+  addEventListener('pageshow',e=>{if(e.persisted){w.className='wipe out';}});
+  document.addEventListener('click',e=>{
+    const a=e.target.closest('a');
+    if(!a)return;
+    const href=a.getAttribute('href')||'';
+    if(a.target==='_blank'||href.startsWith('http')||href.startsWith('mailto')||href.startsWith('#')||e.metaKey||e.ctrlKey)return;
+    e.preventDefault();
+    w.className='wipe in';
+    setTimeout(()=>location.href=href,400);
+  });
+})();
+/* the light shifts through the day */
+(function(){
+  const h=new Date().getHours();
+  const warm = h>=19||h<7 ? '#EDE0C9' : h>=16 ? '#F0E5D0' : '#F0E6D3';
+  document.documentElement.style.setProperty('--bone',warm);
+})();
+</script>
+</body>
+</html>
