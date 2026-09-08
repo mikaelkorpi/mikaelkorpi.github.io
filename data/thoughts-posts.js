@@ -1,0 +1,28 @@
+window.THOUGHTS_POSTS = [
+  {n:'01',date:'syyskuu 2026',title:'Otsikko tulee tähän',mins:'4 min',
+   lead:'Yhden lauseen sisäänheitto joka kertoo mistä on kyse. Noin tämän mittainen.',
+   body:[
+     '<p>Ensimmäinen kappale. Anfangi on tiilenpunainen ja toimii vain jos kappale alkaa kirjaimella. Kolmesta viiteen riviä näyttää oikealta.</p>',
+     '<p>Toinen kappale. Fraunces, 19 pikseliä, 660 pikselin palsta, väljä rivinväli — tätä on tarkoitus lukea rauhassa eikä silmäillä.</p>',
+     '<h2>Väliotsikko</h2>',
+     '<p>Väliotsikon jälkeinen kappale. Väliotsikko on Space Grotesk lihavana, jotta se erottuu leipätekstin seriffistä.</p>',
+     '<blockquote>Sitaatti tiilenpunaisen viivan takana. Tähän se lause jonka haluat jäävän mieleen.</blockquote>',
+     '<p>Kappale sitaatin jälkeen.</p>',
+     '<ul><li>Listan ensimmäinen kohta</li><li>Toinen kohta</li><li>Kolmas kohta</li></ul>',
+     '<figure><div class="frame"><span class="ph">kuva</span></div><figcaption>Kuvateksti. Korvaa div.frame sisältö img-elementillä.</figcaption></figure>',
+     '<em class="pull">Nostolause isolla tiilenpunaisella, kun tarvitset tauon.</em>',
+     '<p>Viimeinen kappale. Vasemman reunan tiilet täyttyvät sitä mukaa kun vierität — tässä pituudessa ne ehtivät täyttyä kokonaan.</p>'
+   ]},
+  {n:'02',date:'elokuu 2026',title:'Lyhyempi otsikko',mins:'2 min',
+   lead:'Toinen sisäänheitto, hieman lyhyempi kuin ensimmäinen.',
+   body:['<p>Kappale yksi.</p>','<p>Kappale kaksi.</p>']},
+  {n:'03',date:'heinäkuu 2026',title:'Kolmas merkintä selkärangassa',mins:'4 min',
+   lead:'Pidempi sisäänheitto joka menee kahdelle riville, jotta näkee miltä se näyttää.',
+   body:['<p>Kappale yksi.</p>','<p>Kappale kaksi.</p>','<p>Kappale kolme.</p>','<p>Kappale neljä.</p>']},
+  {n:'04',date:'kesäkuu 2026',title:'Neljäs',mins:'2 min',
+   lead:'Lyhyt.',
+   body:['<p>Kappale yksi.</p>','<p>Kappale kaksi.</p>']},
+  {n:'05',date:'toukokuu 2026',title:'Viides merkintä',mins:'3 min',
+   lead:'Viimeinen sisäänheitto ennen kuin selkäranka päättyy hahmoon.',
+   body:['<p>Kappale yksi.</p>','<p>Kappale kaksi.</p>','<p>Kappale kolme.</p>']},
+];
