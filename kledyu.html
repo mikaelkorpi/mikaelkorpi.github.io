@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>kledyu</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%23C2432B%27/%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%275%27 fill=%27%23F0E6D3%27/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0a0a0a;
+  --ink-2:#3a3a3a;
+  --ink-3:#888888;
+  --paper:#f8f8f5;
+  --paper-2:#f0f0ed;
+  --paper-3:#e4e4e0;
+  --acid:#c8f000;
+  --acid-2:#b8df00;
+  --white:#ffffff;
+  --line:rgba(10,10,10,0.1);
+  --line-strong:rgba(10,10,10,0.2);
+  --font-g:'Space Grotesk',system-ui,sans-serif;
+  --font-m:'Space Mono',monospace;
+}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:var(--font-g);
+  background-color:var(--paper);
+  color:var(--ink);line-height:1.4;
+  position:fixed;inset:0;
+}
+
+/* FLOATING CONTROLS */
+.float-controls{
+  position:fixed;top:18px;left:20px;z-index:100;
+  display:flex;align-items:center;gap:14px;
+}
+.wordmark{
+  font-family:var(--font-g);font-weight:500;font-size:17px;
+  letter-spacing:0.16em;color:var(--ink);text-transform:lowercase;
+  cursor:default;user-select:none;transition:color 0.2s;
+}
+.wordmark.admin-active{color:var(--acid-2)}
+.nav-count{font-family:var(--font-m);font-size:9px;letter-spacing:0.1em;color:var(--ink-3)}
+.btn-add{
+  font-family:var(--font-m);font-size:9px;letter-spacing:0.1em;
+  background:var(--acid);color:#0a0a0a;border:none;
+  padding:5px 11px;cursor:pointer;text-transform:uppercase;
+  transition:opacity 0.15s;display:none;font-weight:700;
+}
+.btn-add:hover{opacity:0.8}
+.btn-add.visible{display:block}
+.btn-reset{
+  font-family:var(--font-m);font-size:9px;letter-spacing:0.1em;
+  background:none;color:var(--ink-3);border:1px solid var(--line-strong);
+  padding:4px 9px;cursor:pointer;text-transform:uppercase;transition:all 0.15s;
+}
+.btn-reset:hover{color:var(--ink);border-color:var(--ink)}
+
+/* CANVAS */
+.canvas-viewport{
+  position:fixed;inset:0;top:0;
+  overflow:hidden;
+  cursor:grab;
+  touch-action:none;
+}
+.canvas-viewport.grabbing{cursor:grabbing}
+.canvas-world{
+  position:absolute;
+  top:0;left:0;
+  width:100%;height:100%;
+  transform-origin:0 0;
+  will-change:transform;
+}
+
+/* TITLE floating in world */
+
+/* word scrawled behind each card */
+.fcard-backword{
+  position:absolute;
+  font-family:var(--font-g);font-weight:700;
+  font-size:34px;letter-spacing:-0.02em;
+  color:var(--ink);opacity:0.10;
+  text-transform:lowercase;
+  pointer-events:none;user-select:none;
+  white-space:nowrap;z-index:2;
+}
+
+/* basquiat scribbles layer */
+.scribbles{
+  position:absolute;top:0;left:0;
+  pointer-events:none;z-index:0;
+  overflow:visible;
+}
+.scribbles svg{display:block;overflow:visible}
+
+/* FLOATING CARD */
+.fcard{
+  position:absolute;
+  cursor:pointer;
+  user-select:none;
+  transition:transform 0.25s cubic-bezier(.22,1,.36,1),filter 0.25s;
+  will-change:transform;
+}
+.fcard:hover{
+  z-index:80!important;
+  filter:drop-shadow(0 12px 28px rgba(10,10,10,0.22));
+}
+.fcard-img{
+  width:100%;
+  overflow:hidden;position:relative;
+  pointer-events:none;
+  line-height:0;
+}
+.fcard.has-img .fcard-img{height:auto}
+.fcard-img img{width:100%;height:auto;object-fit:contain;display:block;-webkit-user-drag:none}
+.fcard-ph{
+  width:100%;height:100%;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--paper-2);
+}
+.fcard-ph svg{width:24px;height:24px;opacity:0.2;color:var(--ink)}
+/* caption appears on hover only, overlaid */
+.fcard-cap{
+  position:absolute;left:0;right:0;bottom:0;
+  padding:18px 12px 8px;
+  opacity:0;transition:opacity 0.2s;
+  pointer-events:none;text-align:left;
+}
+.fcard-cap p{margin:0}
+.fcard-cap .fcard-designer,.fcard-cap .fcard-model{
+  display:table;
+  background:#0a0a0a;padding:3px 7px;
+}
+.fcard-cap .fcard-model{background:var(--acid);color:#0a0a0a}
+.fcard:hover .fcard-cap{opacity:1}
+.fcard-designer{
+  font-family:var(--font-g);font-weight:700;font-size:12px;
+  color:#fff;letter-spacing:0;line-height:1.3;
+}
+.fcard-model{
+  font-family:var(--font-m);font-size:8px;letter-spacing:0.06em;
+  margin-top:4px;text-transform:uppercase;line-height:1.3;
+}
+.cat-pill{display:none}
+
+/* images render in their own form; no hard masking.
+   placeholder cards get subtle rounding, real images stay natural */
+.fcard.has-img .fcard-img{background:transparent}
+.fcard:not(.has-img) .fcard-img{border-radius:6px}
+
+/* MINI-MAP / recenter button */
+.recenter{
+  position:fixed;bottom:20px;right:20px;z-index:90;
+  background:#0a0a0a;color:#fff;border:none;
+  font-family:var(--font-m);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;
+  padding:9px 14px;cursor:pointer;transition:all 0.15s;
+  display:flex;align-items:center;gap:7px;
+}
+.recenter:hover{background:var(--acid);color:#0a0a0a}
+.recenter svg{width:12px;height:12px}
+
+/* EMPTY */
+.empty-float{
+  position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);
+  text-align:center;pointer-events:none;
+}
+.empty-mark{font-family:var(--font-m);font-size:120px;font-weight:700;color:var(--paper-3);line-height:1}
+.empty-label{font-family:var(--font-m);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);margin-top:8px}
+
+/* MODALS */
+.modal-backdrop{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);
+  z-index:200;align-items:flex-start;justify-content:center;padding:0;overflow-y:auto;
+}
+.modal-backdrop.open{display:flex}
+.modal{background:var(--white);width:100%;max-width:780px;border:2px solid var(--ink);margin:40px auto;flex-shrink:0}
+.modal-hd{padding:20px 24px 16px;border-bottom:2px solid var(--ink);background:#0a0a0a;display:flex;align-items:center;justify-content:space-between}
+.modal-hd-title{font-family:var(--font-g);font-weight:700;font-size:15px;letter-spacing:0.04em;text-transform:uppercase;color:#fff}
+.modal-x{background:none;border:none;cursor:pointer;font-family:var(--font-m);font-size:15px;color:rgba(255,255,255,0.4);padding:2px;line-height:1;transition:color 0.15s}
+.modal-x:hover{color:var(--acid)}
+
+.view-layout{display:grid;grid-template-columns:1fr 1fr}
+.view-img-col{position:relative;border-right:2px solid var(--ink);background:var(--paper);min-height:420px}
+.view-img-col img{width:100%;height:100%;object-fit:contain;display:block;position:absolute;inset:0;padding:20px}
+.view-img-placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.view-img-placeholder svg{width:36px;height:36px;opacity:0.15;color:var(--ink)}
+.view-info-col{padding:30px 30px 30px;display:flex;flex-direction:column}
+.view-designer-label{font-family:var(--font-m);font-weight:700;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-2);margin-bottom:6px}
+.view-model-name{font-family:var(--font-g);font-weight:700;font-size:clamp(18px,2.5vw,28px);letter-spacing:-0.02em;color:var(--ink);line-height:1.1;margin-bottom:20px}
+.view-divider{width:40px;height:2px;background:var(--acid);margin-bottom:20px}
+.view-fields{display:flex;flex-direction:column;gap:18px;flex:1;padding-bottom:8px}
+.vf label{font-family:var(--font-m);font-weight:700;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-2);display:block;margin-bottom:5px}
+.vf p{font-size:13px;color:var(--ink);line-height:1.6}
+.modal-ft{border-top:2px solid var(--ink);padding:14px 24px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.btn-sec{font-family:var(--font-m);font-size:10px;letter-spacing:0.1em;background:none;border:1.5px solid rgba(10,10,10,0.2);padding:7px 14px;color:var(--ink-2);cursor:pointer;text-transform:uppercase;transition:all 0.15s;border-radius:0}
+.btn-sec:hover{border-color:var(--ink);color:var(--ink)}
+.btn-pri{font-family:var(--font-m);font-size:10px;letter-spacing:0.1em;background:var(--acid);border:none;padding:7px 18px;color:#0a0a0a;cursor:pointer;text-transform:uppercase;transition:opacity 0.15s;border-radius:0;font-weight:700}
+.btn-pri:hover{opacity:0.8}
+.btn-del{font-family:var(--font-m);font-size:10px;letter-spacing:0.1em;background:none;border:none;color:#888;cursor:pointer;text-transform:uppercase;transition:opacity 0.15s;padding:0}
+.btn-del:hover{color:var(--ink)}
+
+.add-bd{padding:24px;display:grid;grid-template-columns:1fr 1.1fr;gap:20px}
+.upload-z{aspect-ratio:3/4;border:1.5px dashed rgba(10,10,10,0.2);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;gap:10px;color:var(--ink-3);position:relative;overflow:hidden;background:var(--paper);transition:border-color 0.15s,background 0.15s}
+.upload-z:hover{border-color:var(--acid);background:rgba(200,240,0,0.08)}
+.upload-z input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.upload-z img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.upload-hint{font-family:var(--font-m);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-3);text-align:center;line-height:1.8}
+.form-fields{display:flex;flex-direction:column;gap:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-family:var(--font-m);font-weight:700;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-2)}
+.field input,.field textarea,.field select{background:var(--paper);border:1.5px solid rgba(10,10,10,0.15);padding:8px 10px;font-family:var(--font-g);font-size:13px;color:var(--ink);outline:none;transition:border-color 0.15s;width:100%;appearance:none;-webkit-appearance:none;border-radius:0}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--acid)}
+.field textarea{resize:vertical;min-height:64px;line-height:1.5}
+
+
+/* basquiat modal accents */
+.modal-wordmark{
+  position:absolute;top:-15px;left:50%;transform:translateX(-50%);
+  z-index:5;pointer-events:none;
+  height:17px;overflow:hidden;
+  display:flex;align-items:flex-start;
+}
+.modal-wordmark span{
+  font-family:var(--font-g);font-weight:700;
+  font-size:30px;letter-spacing:0.04em;
+  color:var(--acid);text-transform:lowercase;
+  line-height:1;
+}
+.modal{position:relative}
+.view-img-col{position:relative}
+.view-tag-num{
+  position:absolute;top:12px;left:12px;z-index:6;
+  font-family:var(--font-m);font-weight:700;font-size:10px;
+  letter-spacing:0.1em;color:#0a0a0a;background:var(--acid);
+  padding:3px 8px;
+}
+.view-model-name{position:relative}
+.view-scribble-x{
+  position:absolute;right:-6px;top:-22px;width:26px;height:26px;pointer-events:none;
+}
+.view-scribble-x line{stroke:var(--ink);stroke-width:3;stroke-linecap:round}
+
+
+/* LOUPE magnifier */
+.lightbox-stage{position:relative;display:inline-block;cursor:none}
+.loupe{
+  position:absolute;
+  width:220px;height:220px;
+  border-radius:50%;
+  border:2px solid var(--acid);
+  box-shadow:0 0 0 1px rgba(0,0,0,0.6),0 8px 40px rgba(0,0,0,0.5);
+  pointer-events:none;
+  background-repeat:no-repeat;
+  display:none;
+  z-index:520;
+  overflow:hidden;
+}
+.loupe.active{display:block}
+.loupe::after{
+  content:'';position:absolute;left:50%;top:50%;
+  width:1px;height:14px;background:rgba(200,240,0,0.5);
+  transform:translate(-50%,-50%);
+}
+.loupe-ring{
+  position:absolute;inset:0;border-radius:50%;
+  box-shadow:inset 0 0 24px rgba(0,0,0,0.35);pointer-events:none;
+}
+.loupe-label{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  font-family:var(--font-m);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;
+  color:rgba(255,255,255,0.4);z-index:521;pointer-events:none;
+}
+
+/* LIGHTBOX */
+.lightbox{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.97);align-items:center;justify-content:center;cursor:zoom-out}
+.lightbox.open{display:flex}
+.lightbox img{max-width:92vw;max-height:92vh;object-fit:contain;display:block}
+.lightbox-close{position:fixed;top:20px;right:24px;background:none;border:none;cursor:pointer;font-family:var(--font-m);font-size:18px;color:rgba(255,255,255,0.5);transition:color 0.15s;z-index:501;line-height:1}
+.lightbox-close:hover{color:var(--acid)}
+.img-expand-btn{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,0.55);border:none;cursor:pointer;color:rgba(255,255,255,0.8);width:28px;height:28px;display:none;align-items:center;justify-content:center;transition:background 0.15s;z-index:5}
+.img-expand-btn:hover{background:var(--acid);color:#0a0a0a}
+.img-expand-btn svg{width:13px;height:13px}
+.view-img-col:hover .img-expand-btn{display:flex}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important}
+}
+
+/* page transition */
+.wipe{position:fixed;inset:0;background:var(--brick);z-index:200;transform:translateY(100%);pointer-events:none}
+.wipe.in{animation:wipeIn .42s cubic-bezier(.7,0,.3,1) forwards}
+.wipe.out{transform:translateY(0);animation:wipeOut .5s .05s cubic-bezier(.7,0,.3,1) forwards}
+@keyframes wipeIn{to{transform:translateY(0)}}
+@keyframes wipeOut{to{transform:translateY(-100%)}}
+</style>
+</head>
+<body>
+
+<div class="float-controls">
+  <span class="wordmark" id="wordmark">kledyu</span>
+  <span class="nav-count" id="item-count"></span>
+  <button class="btn-add" id="btn-add" onclick="openAdd()">+ add</button>
+  <button class="btn-reset" id="btn-reset" onclick="resetCanvas()" style="display:none">reset</button>
+</div>
+
+<div class="canvas-viewport" id="viewport">
+  <div class="canvas-world" id="world"></div>
+</div>
+
+<button class="recenter" onclick="recenter()">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+  recenter
+</button>
+
+<!-- VIEW MODAL -->
+<div class="modal-backdrop" id="view-modal">
+  <div class="modal">
+    <div class="modal-wordmark"><span>kledyu</span></div>
+    <div class="modal-hd">
+      <p class="modal-hd-title" id="v-header-title">piece</p>
+      <button class="modal-x" onclick="closeModal('view-modal')">&#x2715;</button>
+    </div>
+    <div class="view-layout">
+      <div class="view-img-col" id="v-img-col">
+        <span class="view-tag-num" id="v-tag-num">001</span>
+        <div class="view-img-placeholder" id="v-img-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+        </div>
+        <img id="v-img" src="" alt="" style="display:none">
+        <button class="img-expand-btn" id="img-expand-btn" onclick="openLightbox(event)" title="full size">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+        </button>
+      </div>
+      <div class="view-info-col">
+        <p class="view-designer-label" id="v-designer"></p>
+        <p class="view-model-name" id="v-model"></p>
+        <div class="view-divider"></div>
+        <div class="view-fields">
+          <div class="vf" id="vf-ref"><label>reference</label><p id="v-ref"></p></div>
+          <div class="vf" id="vf-cat"><label>category</label><p id="v-cat"></p></div>
+          <div class="vf" id="vf-fit"><label>fit</label><p id="v-fit"></p></div>
+          <div class="vf" id="vf-notes"><label>notes</label><p id="v-notes"></p></div>
+          <div class="vf" id="vf-why" style="border-top:1px solid var(--line);padding-top:16px;margin-top:4px"><label>why i want this</label><p id="v-why" style="font-style:italic;color:var(--ink-2);line-height:1.7"></p></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-del" id="v-del-btn" onclick="deleteItem()" style="display:none">remove</button>
+      <div style="display:flex;gap:8px;margin-left:auto">
+        <button class="btn-sec" onclick="closeModal('view-modal')">close</button>
+        <button class="btn-pri" id="v-edit-btn" onclick="editFromView()" style="display:none">edit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD / EDIT MODAL -->
+<div class="modal-backdrop" id="add-modal">
+  <div class="modal">
+    <div class="modal-hd">
+      <p class="modal-hd-title" id="add-modal-title">New piece</p>
+      <button class="modal-x" onclick="closeModal('add-modal')">&#x2715;</button>
+    </div>
+    <div class="add-bd">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="upload-z" id="upload-z">
+          <input type="file" accept="image/*" onchange="handleImg(event)">
+          <svg id="up-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" width="26" height="26"><rect x="3" y="3" width="18" height="18"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+          <p class="upload-hint" id="up-hint">drop image<br>or click</p>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-family:var(--font-m);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-2)">
+          <input type="checkbox" id="strip-bg-toggle" checked onchange="stripBg=this.checked" style="width:auto;margin:0;accent-color:var(--acid-2)">
+          remove background
+        </label>
+      </div>
+      <div class="form-fields">
+        <div class="field">
+          <label>Item type</label>
+          <select id="f-type" onchange="onTypeChange()">
+            <option value="garment">garment / clothing</option>
+            <option value="art">art / artwork</option>
+            <option value="object">object / design piece</option>
+            <option value="other">other</option>
+          </select>
+        </div>
+        <div class="field"><label id="lbl-designer">Designer / brand</label><input type="text" id="f-designer" placeholder="e.g. Comme des Garcons"></div>
+        <div class="field"><label id="lbl-model">Model / product name</label><input type="text" id="f-model" placeholder="e.g. Destroyed Denim Jacket"></div>
+        <div class="field"><label id="lbl-ref">Reference / product no.</label><input type="text" id="f-ref" placeholder="e.g. DJ-B099-W23"></div>
+        <div class="field">
+          <label>Category</label>
+          <select id="f-category">
+            <option value="">— select —</option>
+          </select>
+        </div>
+        <div class="field"><label id="lbl-fit">Fit — how it wears</label><textarea id="f-fit" placeholder="e.g. boxy, runs massive — size down two"></textarea></div>
+        <div class="field"><label>Material / medium / notes</label><textarea id="f-notes" placeholder="e.g. raw selvedge, fades beautifully" style="min-height:48px"></textarea></div>
+        <div class="field"><label>Why I want this</label><textarea id="f-why" placeholder="what draws you to this piece..." style="min-height:60px"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-sec" onclick="closeModal('add-modal')">cancel</button>
+      <button class="btn-pri" onclick="saveItem()">save to archive</button>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">&#x2715;</button>
+  <div class="lightbox-stage" id="lightbox-stage">
+    <img id="lightbox-img" src="" alt="">
+    <div class="loupe" id="loupe"><div class="loupe-ring"></div></div>
+  </div>
+  <div class="loupe-label">move to inspect &middot; scroll to change zoom</div>
+</div>
+
+<script>
+const KEY='kledyu_canvas_v1';
+const POS_KEY='kledyu_positions_v1';
+let items=[];
+let positions={};
+let viewId=null,editId=null,pendingImg=null;
+let adminMode=false,clickCount=0,clickTimer=null;
+
+// canvas pan state
+let panX=0,panY=0;
+let isDragging=false,dragStartX=0,dragStartY=0,startPanX=0,startPanY=0;
+let movedDuringDrag=false;
+
+// card-drag state (admin)
+let draggingCard=null,cardStartX=0,cardStartY=0,cardOrigX=0,cardOrigY=0;
+
+
+// item type configurations — labels + categories adapt
+const TYPE_CONFIG={
+  garment:{
+    designer:'Designer / brand',model:'Model / product name',ref:'Reference / product no.',fit:'Fit — how it wears',
+    cats:['outerwear','tops','bottoms','footwear','accessories','bags']
+  },
+  art:{
+    designer:'Artist',model:'Title of work',ref:'Year / edition',fit:'Dimensions / placement',
+    cats:['painting','print','photograph','sculpture','drawing','mixed media']
+  },
+  object:{
+    designer:'Designer / maker',model:'Name of piece',ref:'Reference / edition',fit:'Dimensions / use',
+    cats:['furniture','lighting','ceramics','homeware','tech','book']
+  },
+  other:{
+    designer:'Maker / source',model:'Name',ref:'Reference',fit:'Notes on form',
+    cats:[]
+  }
+};
+function onTypeChange(){
+  const t=document.getElementById('f-type').value;
+  const cfg=TYPE_CONFIG[t]||TYPE_CONFIG.garment;
+  document.getElementById('lbl-designer').textContent=cfg.designer;
+  document.getElementById('lbl-model').textContent=cfg.model;
+  document.getElementById('lbl-ref').textContent=cfg.ref;
+  document.getElementById('lbl-fit').textContent=cfg.fit;
+  const sel=document.getElementById('f-category');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">— select —</option>'+cfg.cats.map(x=>`<option>${x}</option>`).join('');
+  if(cfg.cats.includes(cur))sel.value=cur;
+}
+
+const DEMO=[
+  {id:'d1',designer:'Maison Margiela',model:'Tabi Derby — Brushed Leather',ref:'S57WQ0124 P4179',category:'footwear',fit:'True to size. The split toe takes two weeks to break in but then it\'s the only shoe you\'ll ever want to wear.',notes:'Black brushed calf leather. Stacked heel 3cm. Made in Italy.',why:'The split toe is the most divisive shoe in fashion and that is exactly why I want it. Nobody is neutral about Tabis.',image:null,ts:7},
+  {id:'d2',designer:'Comme des Garcons',model:'Destroyed Wool Blazer',ref:'PJ-J030-W23',category:'outerwear',fit:'Oversized intentionally. Shoulders raw, lining hangs loose.',notes:'85% wool 15% nylon. AW23. One of 200 made.',why:'Rei Kawakubo treats deconstruction as a finished idea, not a flaw. This blazer looks expensive precisely because it looks broken.',image:null,ts:6},
+  {id:'d3',designer:'Yohji Yamamoto',model:'Wide Pleated Trousers',ref:'HH-P28-223',category:'bottoms',fit:'Size down one. Sits high, falls to the ankle with zero break.',notes:'100% wool gabardine. Jet black, holds shape across seasons.',why:'The drape on these is architecture. Yohji black is its own colour.',image:null,ts:5},
+  {id:'d4',designer:'Rick Owens',model:'Bauhaus Hoodie — Pearl',ref:'RU01C3701 FL',category:'tops',fit:'Runs very large. Pearl colourway discontinued.',notes:'100% cotton fleece. Dropped shoulder, elongated hem.',why:'The pearl colourway is impossible to find now. The elongated cut makes everything else in the wardrobe look stubby.',image:null,ts:4},
+  {id:'d5',designer:'Ann Demeulemeester',model:'Lace-Up Leather Boot',ref:'24.08-B-LCBT',category:'footwear',fit:'Half size down. Buy leather laces separately.',notes:'Vegetable-tanned leather, natural sole. Belgian made.',why:'The lace system is excessive in the best way. These age into something better than they start.',image:null,ts:3},
+  {id:'d6',designer:'Issey Miyake',model:'Pleats Please Long Coat',ref:'PP91-JK341',category:'outerwear',fit:'One size works for most. Packable down to nothing.',notes:'Pleated polyester. Midnight navy. Machine washable.',why:'Engineering disguised as clothing. Folds into a pouch and comes out perfect.',image:null,ts:2},
+  {id:'d7',designer:'Dries Van Noten',model:'Embroidered Silk Shirt',ref:'DVN-SH-2402',category:'tops',fit:'Standard fit. Embroidery adds weight at the chest.',notes:'100% silk. Floral embroidery, burnt orange and forest green. SS24.',why:'Dries does print like a painter. This is the one shirt that does the talking for you.',image:null,ts:1},
+];
+
+// admin mode via URL: ?admin or #admin  (e.g. kledyu.fi/?admin)
+function checkAdmin(){
+  const q=window.location.search.toLowerCase();
+  const h=window.location.hash.toLowerCase();
+  if(q.includes('admin')||h.includes('admin')){
+    adminMode=true;
+    document.getElementById('wordmark').classList.add('admin-active');
+    document.getElementById('btn-add').classList.add('visible');
+    document.getElementById('btn-reset').style.display='block';
+  }
+}
+checkAdmin();
+window.addEventListener('hashchange',()=>{location.reload();});
+
+async function load(){
+  try{const r=await window.storage.get(KEY);if(r&&r.value)items=JSON.parse(r.value);}catch(e){items=[];}
+  try{const p=await window.storage.get(POS_KEY);if(p&&p.value)positions=JSON.parse(p.value);}catch(e){positions={};}
+  build();
+}
+async function persist(){try{await window.storage.set(KEY,JSON.stringify(items));}catch(e){}}
+async function persistPos(){try{await window.storage.set(POS_KEY,JSON.stringify(positions));}catch(e){}}
+
+function activeList(){return items.length>0?items:DEMO;}
+
+// deterministic scattered layout for items without saved positions
+const SHAPES=['rounded','arch','rounded','pill','rounded','circle','arch','rounded'];
+const RATIOS=[1.3,0.75,1,1.45,1.15,1,1.35,0.8];
+
+function layoutFor(list){
+  // tight moodboard scatter — overlapping, varied, compact
+  const seeds=[
+    {x:60,y:40,w:230},  {x:330,y:120,w:180}, {x:540,y:30,w:260},
+    {x:120,y:330,w:200},{x:380,y:360,w:230}, {x:660,y:330,w:190},
+    {x:30,y:600,w:240}, {x:300,y:640,w:170}, {x:520,y:600,w:240},
+    {x:790,y:560,w:200},{x:240,y:900,w:220}, {x:520,y:910,w:180},
+  ];
+  const result={};
+  list.forEach((item,i)=>{
+    if(positions[item.id]){result[item.id]=positions[item.id];return;}
+    const s=seeds[i%seeds.length];
+    const tier=Math.floor(i/seeds.length);
+    result[item.id]={
+      x:s.x+tier*120+(i%3)*20,
+      y:s.y+tier*1080+(i%2)*30,
+      w:s.w,
+      rot:((i*53)%7-3)*0.7,
+      shape:SHAPES[i%SHAPES.length],
+      ratio:(SHAPES[i%SHAPES.length]==='circle'||SHAPES[i%SHAPES.length]==='pill')?1:RATIOS[i%RATIOS.length]
+    };
+  });
+  return result;
+}
+
+let computedLayout={};
+
+function build(){
+  const list=activeList();
+  document.getElementById('item-count').textContent=items.length===0?'':`${items.length} piece${items.length===1?'':'s'}`;
+  computedLayout=layoutFor(list);
+  computeBounds();
+  renderWorld();
+  recenter();
+}
+
+function renderWorld(){
+  const world=document.getElementById('world');
+  world.innerHTML='';
+
+  // basquiat-style scribbles drawn in the world background
+  renderScribbles();
+
+  const list=activeList();
+  if(list.length===0){
+    const empty=document.createElement('div');
+    empty.className='empty-float';
+    empty.innerHTML='<p class="empty-mark">&#8709;</p><p class="empty-label">nothing archived yet</p>';
+    world.appendChild(empty);
+    return;
+  }
+  renderCards();
+}
+
+function renderScribbles(){
+  const world=document.getElementById('world');
+  const old=world.querySelector('.scribbles');
+  if(old)old.remove();
+
+  const wrap=document.createElement('div');
+  wrap.className='scribbles';
+  wrap.style.left='0';wrap.style.top='0';
+
+  // marks scattered across the content bounds — crown, arrows, words, slashes, halo
+  const ink='rgba(10,10,10,0.13)';
+  const acid='rgba(160,200,0,0.30)';
+  const marks=[
+    // ── basquiat three-point crown (signature) ──
+    `<g transform="translate(-40,-90) rotate(-7)"><path d="M0 44 L14 2 L34 30 L56 -6 L78 32 L94 -2 L108 46 Z" fill="none" stroke="${ink}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><line x1="0" y1="52" x2="108" y2="54" stroke="${ink}" stroke-width="4"/></g>`,
+    // ── dinosaur (basquiat loved dinos) ──
+    `<g transform="translate(880,40) rotate(5)"><path d="M0 60 Q4 20 36 18 Q52 -2 78 6 Q70 18 60 20 Q96 22 104 54 L96 56 Q90 40 70 42 L72 60 L62 60 L60 44 Q40 48 30 44 L30 62 L20 62 L20 44 Q6 50 0 60 Z" fill="none" stroke="${ink}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="44" cy="14" r="2.5" fill="${ink}"/><path d="M40 28 L50 28 M44 30 L48 30" stroke="${ink}" stroke-width="1.5"/></g>`,
+    // ── big slashy outline word "WANT" ──
+    `<text x="560" y="150" font-family="'Space Grotesk',sans-serif" font-weight="700" font-size="62" fill="none" stroke="${ink}" stroke-width="2" transform="rotate(-4 560 150)" letter-spacing="3">WANT</text>`,
+    // ── arrow swoosh ──
+    `<g transform="translate(400,420) rotate(14)"><path d="M0 0 C40 -34 96 -12 138 10" fill="none" stroke="${ink}" stroke-width="3" stroke-linecap="round"/><path d="M124 -8 L140 12 L116 20" fill="none" stroke="${ink}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>`,
+    // ── halo with rays (acid) ──
+    `<g transform="translate(740,300)"><path d="M0 30 C-12 -2 32 -18 54 -4 C78 10 68 48 38 54 C12 58 -4 48 0 30 Z" fill="none" stroke="${acid}" stroke-width="4.5" stroke-linecap="round"/><line x1="26" y1="-32" x2="22" y2="-50" stroke="${acid}" stroke-width="3.5"/><line x1="44" y1="-28" x2="50" y2="-46" stroke="${acid}" stroke-width="3.5"/><line x1="10" y1="-28" x2="0" y2="-44" stroke="${acid}" stroke-width="3.5"/></g>`,
+    // ── crossbones / bone ──
+    `<g transform="translate(120,720) rotate(-12)"><path d="M0 0 a8 8 0 0 0 -10 10 L22 42 a8 8 0 1 0 10 -10 Z" fill="none" stroke="${ink}" stroke-width="3" stroke-linejoin="round"/><path d="M-8 4 a6 6 0 0 0 -8 6" fill="none" stroke="${ink}" stroke-width="3" stroke-linecap="round"/></g>`,
+    // ── x mark ──
+    `<g transform="translate(160,420) rotate(8)"><line x1="0" y1="0" x2="36" y2="36" stroke="${ink}" stroke-width="4" stroke-linecap="round"/><line x1="36" y1="0" x2="0" y2="36" stroke="${ink}" stroke-width="4" stroke-linecap="round"/></g>`,
+    // ── word "ICON" with strike ──
+    `<text x="60" y="1060" font-family="'Space Grotesk',sans-serif" font-weight="700" font-size="48" fill="${ink}" transform="rotate(4 60 1060)" letter-spacing="1">ICON</text><line x1="55" y1="1045" x2="215" y2="1050" stroke="${acid}" stroke-width="4" transform="rotate(4 60 1060)"/>`,
+    // ── squiggle underline ──
+    `<path d="M540 600 q16 -16 32 0 q16 16 32 0 q16 -16 32 0 q16 16 32 0 q16 -16 32 0" fill="none" stroke="${acid}" stroke-width="4" stroke-linecap="round" transform="rotate(-2 600 600)"/>`,
+    // ── star ──
+    `<g transform="translate(1000,460)"><path d="M16 0 L20 12 L34 12 L23 20 L27 34 L16 25 L5 34 L9 20 L-2 12 L12 12 Z" fill="none" stroke="${ink}" stroke-width="3" stroke-linejoin="round"/></g>`,
+    // ── arrow 2 ──
+    `<g transform="translate(720,860) rotate(-18)"><line x1="0" y1="0" x2="86" y2="0" stroke="${ink}" stroke-width="3" stroke-linecap="round"/><path d="M70 -11 L88 0 L70 11" fill="none" stroke="${ink}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>`,
+    // ── circled word "GRAIL" ──
+    `<text x="280" y="840" font-family="'Space Mono',monospace" font-weight="700" font-size="24" fill="${ink}" transform="rotate(-5 280 840)">GRAIL</text><ellipse cx="320" cy="832" rx="62" ry="26" fill="none" stroke="${ink}" stroke-width="2.5" transform="rotate(-5 320 832)"/>`,
+    // ── tm / copyright scrawl ──
+    `<text x="1080" y="760" font-family="'Space Mono',monospace" font-weight="700" font-size="28" fill="${ink}" transform="rotate(6 1080 760)">©</text>`,
+    // ── dollar (basquiat motif) ──
+    `<text x="40" y="220" font-family="'Space Grotesk',sans-serif" font-weight="700" font-size="52" fill="none" stroke="${acid}" stroke-width="2.5" transform="rotate(-8 40 220)">$</text>`,
+    // ── small spiky scribble ──
+    `<path d="M460 980 l8 -16 l8 16 l8 -16 l8 16 l8 -16 l8 16" fill="none" stroke="${ink}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`,
+  ];
+
+  const svg=`<svg width="1300" height="1300" viewBox="-100 -130 1400 1430">${marks.join('')}</svg>`;
+  wrap.innerHTML=svg;
+  world.appendChild(wrap);
+}
+
+function renderCards(){
+  const world=document.getElementById('world');
+  world.querySelectorAll('.fcard,.fcard-backword').forEach(c=>c.remove());
+
+  const list=activeList();
+  list.forEach((item,i)=>{
+    const pos=computedLayout[item.id]||{x:100,y:100,w:240,rot:0,ratio:1.2};
+    // scrawled word peeking out behind the card
+    if(pos.word){
+      const bw=document.createElement('div');
+      bw.className='fcard-backword';
+      bw.textContent=pos.word;
+      bw.style.left=(pos.x-14)+'px';
+      bw.style.top=(pos.y-26)+'px';
+      bw.style.transform=`rotate(${(pos.rot||0)-2}deg)`;
+      world.appendChild(bw);
+    }
+    const card=document.createElement('div');
+    card.className='fcard'+(item.image?' has-img':'');
+    card.dataset.id=item.id;
+    card.style.left=pos.x+'px';
+    card.style.top=pos.y+'px';
+    card.style.width=pos.w+'px';
+    card.style.transform=`rotate(${pos.rot||0}deg)`;
+    card.style.zIndex=10+i;
+
+    let imgHtml,capHtml;
+    if(item.image){
+      imgHtml=`<img src="${item.image}" alt="" draggable="false">`;
+      capHtml=`<div class="fcard-cap"><p class="fcard-designer">${item.designer||'unknown'}</p><p class="fcard-model">${item.model||''}</p></div>`;
+      card.innerHTML=`<div class="fcard-img">${imgHtml}${capHtml}</div>`;
+    } else {
+      const imgH=Math.round(pos.w*(pos.ratio||1.2));
+      card.style.height=imgH+'px';
+      imgHtml=`<div class="fcard-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></div>`;
+      capHtml=`<div class="fcard-cap"><p class="fcard-designer">${item.designer||'unknown'}</p><p class="fcard-model">${item.model||''}</p></div>`;
+      card.innerHTML=`<div class="fcard-img" style="height:100%">${imgHtml}${capHtml}</div>`;
+    }
+
+    attachCardHandlers(card,item);
+    world.appendChild(card);
+  });
+}
+
+function attachCardHandlers(card,item){
+  card.addEventListener('pointerdown',e=>{
+    e.stopPropagation();
+    draggingCard=card;
+    const pos=computedLayout[item.id];
+    cardStartX=e.clientX;cardStartY=e.clientY;
+    cardOrigX=pos.x;cardOrigY=pos.y;
+    movedDuringDrag=false;
+    card.style.transition='none';
+    card.style.zIndex=999;
+    card.setPointerCapture(e.pointerId);
+  });
+  card.addEventListener('pointermove',e=>{
+    if(draggingCard===card){
+      const dx=(e.clientX-cardStartX)/scale;
+      const dy=(e.clientY-cardStartY)/scale;
+      if(Math.abs(e.clientX-cardStartX)>4||Math.abs(e.clientY-cardStartY)>4)movedDuringDrag=true;
+      const pos=computedLayout[item.id];
+      pos.x=cardOrigX+dx;pos.y=cardOrigY+dy;
+      card.style.left=pos.x+'px';card.style.top=pos.y+'px';
+    }
+  });
+  card.addEventListener('pointerup',e=>{
+    if(draggingCard===card){
+      draggingCard=null;
+      card.style.transition='';
+      if(movedDuringDrag){
+        positions[item.id]={...computedLayout[item.id]};
+        persistPos();
+        computeBounds();
+      } else {
+        viewItem(item.id);
+      }
+    }
+  });
+}
+
+// ── CANVAS PAN ──
+let scale=1;
+const viewport=document.getElementById('viewport');
+const world=document.getElementById('world');
+
+let worldBounds={minX:0,minY:0,maxX:1200,maxY:1400};
+function computeBounds(){
+  const list=activeList();
+  if(list.length===0){worldBounds={minX:0,minY:0,maxX:800,maxY:600};return;}
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  list.forEach(item=>{
+    const p=computedLayout[item.id];if(!p)return;
+    const h=p.w*(p.ratio||1.2);
+    minX=Math.min(minX,p.x);minY=Math.min(minY,p.y);
+    maxX=Math.max(maxX,p.x+p.w);maxY=Math.max(maxY,p.y+h);
+  });
+  worldBounds={minX,minY,maxX,maxY};
+}
+function clampPan(){
+  const vw=viewport.clientWidth,vh=viewport.clientHeight;
+  const pad=240; // breathing room beyond content
+  const cw=(worldBounds.maxX-worldBounds.minX)*scale;
+  const ch=(worldBounds.maxY-worldBounds.minY)*scale;
+  // allowed pan range so content stays partly visible
+  const maxPanX=-worldBounds.minX*scale+pad;
+  const minPanX=vw-worldBounds.maxX*scale-pad;
+  const maxPanY=-worldBounds.minY*scale+pad;
+  const minPanY=vh-worldBounds.maxY*scale-pad;
+  // if content smaller than viewport, center-lock-ish (allow some)
+  if(minPanX<maxPanX)panX=Math.min(maxPanX,Math.max(minPanX,panX));
+  if(minPanY<maxPanY)panY=Math.min(maxPanY,Math.max(minPanY,panY));
+}
+function applyTransform(){
+  clampPan();
+  world.style.transform=`translate(${panX}px,${panY}px) scale(${scale})`;
+}
+
+viewport.addEventListener('pointerdown',e=>{
+  if(draggingCard)return;
+  isDragging=true;movedDuringDrag=false;
+  dragStartX=e.clientX;dragStartY=e.clientY;
+  startPanX=panX;startPanY=panY;
+  viewport.classList.add('grabbing');
+  viewport.setPointerCapture(e.pointerId);
+});
+viewport.addEventListener('pointermove',e=>{
+  if(!isDragging||draggingCard)return;
+  panX=startPanX+(e.clientX-dragStartX);
+  panY=startPanY+(e.clientY-dragStartY);
+  if(Math.abs(e.clientX-dragStartX)>4||Math.abs(e.clientY-dragStartY)>4)movedDuringDrag=true;
+  applyTransform();
+});
+viewport.addEventListener('pointerup',e=>{
+  isDragging=false;
+  viewport.classList.remove('grabbing');
+});
+viewport.addEventListener('pointerleave',()=>{isDragging=false;viewport.classList.remove('grabbing')});
+
+// wheel pan (trackpad two-finger) + ctrl/cmd zoom
+viewport.addEventListener('wheel',e=>{
+  e.preventDefault();
+  if(e.ctrlKey||e.metaKey){
+    const delta=-e.deltaY*0.0015;
+    const newScale=Math.min(2,Math.max(0.4,scale+delta));
+    // zoom toward cursor
+    const rect=viewport.getBoundingClientRect();
+    const cx=e.clientX-rect.left;const cy=e.clientY-rect.top;
+    panX=cx-(cx-panX)*(newScale/scale);
+    panY=cy-(cy-panY)*(newScale/scale);
+    scale=newScale;
+  } else {
+    panX-=e.deltaX;
+    panY-=e.deltaY;
+  }
+  applyTransform();
+},{passive:false});
+
+function recenter(){
+  const list=activeList();
+  if(list.length===0){panX=0;panY=0;scale=1;applyTransform();return;}
+  // compute bounding box of all cards
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  list.forEach(item=>{
+    const p=computedLayout[item.id];if(!p)return;
+    const h=p.w*(p.ratio||1.2);
+    minX=Math.min(minX,p.x);minY=Math.min(minY,p.y);
+    maxX=Math.max(maxX,p.x+p.w);maxY=Math.max(maxY,p.y+h);
+  });
+  const vw=viewport.clientWidth,vh=viewport.clientHeight;
+  const bw=maxX-minX,bh=maxY-minY;
+  scale=Math.min(1,Math.min(vw/(bw+200),vh/(bh+200)));
+  panX=(vw-bw*scale)/2-minX*scale;
+  panY=(vh-bh*scale)/2-minY*scale;
+  applyTransform();
+}
+
+function resetCanvas(){
+  positions={};persistPos();
+  build();
+}
+
+// ── ADD / EDIT / VIEW ──
+function openAdd(){
+  if(!adminMode)return;
+  editId=null;pendingImg=null;
+  ['f-designer','f-model','f-ref','f-fit','f-notes','f-why'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-type').value='garment';onTypeChange();
+  document.getElementById('f-category').value='';
+  resetUploadZone();
+  document.getElementById('add-modal-title').textContent='New piece';
+  document.getElementById('add-modal').classList.add('open');
+}
+function resetUploadZone(){
+  const z=document.getElementById('upload-z');
+  const img=z.querySelector('img');if(img)img.remove();
+  document.getElementById('up-icon').style.display='';
+  document.getElementById('up-hint').style.display='';
+}
+let stripBg=true; // default on — clean up "fake transparent" stock images
+function handleImg(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    const raw=ev.target.result;
+    const showImg=(src)=>{
+      pendingImg=src;
+      const z=document.getElementById('upload-z');
+      let img=z.querySelector('img');
+      if(!img){img=document.createElement('img');z.appendChild(img);}
+      img.src=src;
+      document.getElementById('up-icon').style.display='none';
+      document.getElementById('up-hint').style.display='none';
+    };
+    if(stripBg){
+      removeBackground(raw).then(showImg).catch(()=>showImg(raw));
+    } else {
+      showImg(raw);
+    }
+  };
+  r.readAsDataURL(f);
+}
+
+// flood-fill from the four corners, removing the background colour
+// (handles solid white/grey AND baked-in checkerboard patterns)
+function removeBackground(dataUrl){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.onload=()=>{
+      const cv=document.createElement('canvas');
+      const w=cv.width=img.naturalWidth;
+      const h=cv.height=img.naturalHeight;
+      const ctx=cv.getContext('2d');
+      ctx.drawImage(img,0,0);
+      let data;
+      try{data=ctx.getImageData(0,0,w,h);}catch(err){reject(err);return;}
+      const px=data.data;
+
+      // detect if image is mostly checkerboard-style (two near-grey tones)
+      // sample corner colours as background seeds
+      const idx=(x,y)=>(y*w+x)*4;
+      const seedPts=[[0,0],[w-1,0],[0,h-1],[w-1,h-1],[Math.floor(w/2),0],[0,Math.floor(h/2)]];
+      const isBgColour=(r,g,b)=>{
+        // near-white, near-light-grey, or checkerboard greys (200-255 range, low saturation)
+        const mx=Math.max(r,g,b),mn=Math.min(r,g,b);
+        const sat=mx-mn;
+        return mx>=205 && sat<=22; // light + nearly neutral
+      };
+
+      // BFS flood fill from edges, clearing background pixels
+      const visited=new Uint8Array(w*h);
+      const stack=[];
+      for(const [sx,sy] of seedPts){
+        const i=idx(sx,sy);
+        if(isBgColour(px[i],px[i+1],px[i+2])){stack.push(sx,sy);}
+      }
+      // also seed entire border row/col to catch checkerboard edges
+      for(let x=0;x<w;x++){stack.push(x,0);stack.push(x,h-1);}
+      for(let y=0;y<h;y++){stack.push(0,y);stack.push(w-1,y);}
+
+      while(stack.length){
+        const y=stack.pop(),x=stack.pop();
+        if(x<0||y<0||x>=w||y>=h)continue;
+        const p=y*w+x;
+        if(visited[p])continue;
+        const i=p*4;
+        if(!isBgColour(px[i],px[i+1],px[i+2]))continue;
+        visited[p]=1;
+        px[i+3]=0; // make transparent
+        stack.push(x+1,y,x-1,y,x,y+1,x,y-1);
+      }
+
+      ctx.putImageData(data,0,0);
+      // soften edges slightly: nothing fancy, just output
+      resolve(cv.toDataURL('image/png'));
+    };
+    img.onerror=reject;
+    img.src=dataUrl;
+  });
+}
+function saveItem(){
+  const designer=document.getElementById('f-designer').value.trim();
+  const model=document.getElementById('f-model').value.trim();
+  if(!designer&&!model){document.getElementById('f-designer').focus();return;}
+  const data={
+    id:editId||Date.now().toString(),
+    designer,model,
+    ref:document.getElementById('f-ref').value.trim(),
+    category:document.getElementById('f-category').value,
+    fit:document.getElementById('f-fit').value.trim(),
+    notes:document.getElementById('f-notes').value.trim(),
+    why:document.getElementById('f-why').value.trim(),
+    type:document.getElementById('f-type').value,
+    image:pendingImg,
+    ts:editId?(items.find(i=>i.id===editId)?.ts||Date.now()):Date.now()
+  };
+  if(editId){items=items.map(i=>i.id===editId?data:i);}
+  else{items.unshift(data);}
+  persist();closeModal('add-modal');build();
+}
+function viewItem(id){
+  const list=activeList();
+  const item=list.find(i=>i.id===id);if(!item)return;
+  viewId=id;
+  document.getElementById('v-header-title').textContent=item.designer||'piece';
+  document.getElementById('v-designer').textContent=item.designer||'';
+  document.getElementById('v-model').textContent=item.model||'—';
+  const vImg=document.getElementById('v-img'),vPh=document.getElementById('v-img-placeholder');
+  if(item.image){vImg.src=item.image;vImg.style.display='block';vPh.style.display='none';document.getElementById('img-expand-btn').style.display='flex';}
+  else{vImg.style.display='none';vPh.style.display='flex';document.getElementById('img-expand-btn').style.display='none';}
+  setVF('vf-ref','v-ref',item.ref);
+  setVF('vf-cat','v-cat',item.category);
+  setVF('vf-fit','v-fit',item.fit);
+  setVF('vf-notes','v-notes',item.notes);
+  setVF('vf-why','v-why',item.why);
+  const isReal=items.some(i=>i.id===id);
+  document.getElementById('v-del-btn').style.display=(adminMode&&isReal)?'':'none';
+  document.getElementById('v-edit-btn').style.display=(adminMode&&isReal)?'':'none';
+  document.getElementById('view-modal').classList.add('open');
+}
+function setVF(w,p,v){document.getElementById(w).style.display=v?'':'none';document.getElementById(p).textContent=v||'';}
+function editFromView(){
+  const item=items.find(i=>i.id===viewId);if(!item)return;
+  closeModal('view-modal');
+  editId=item.id;pendingImg=item.image||null;
+  document.getElementById('f-type').value=item.type||'garment';onTypeChange();
+  document.getElementById('f-designer').value=item.designer||'';
+  document.getElementById('f-model').value=item.model||'';
+  document.getElementById('f-ref').value=item.ref||'';
+  document.getElementById('f-category').value=item.category||'';
+  document.getElementById('f-fit').value=item.fit||'';
+  document.getElementById('f-notes').value=item.notes||'';
+  document.getElementById('f-why').value=item.why||'';
+  resetUploadZone();
+  if(item.image){
+    const z=document.getElementById('upload-z');
+    const img=document.createElement('img');img.src=item.image;z.appendChild(img);
+    document.getElementById('up-icon').style.display='none';
+    document.getElementById('up-hint').style.display='none';
+  }
+  document.getElementById('add-modal-title').textContent='Edit piece';
+  document.getElementById('add-modal').classList.add('open');
+}
+function deleteItem(){
+  delete positions[viewId];persistPos();
+  items=items.filter(i=>i.id!==viewId);
+  persist();closeModal('view-modal');build();
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+// lightbox + loupe magnifier
+let loupeZoom=2.4;
+function openLightbox(e){
+  e.stopPropagation();
+  const src=document.getElementById('v-img').src;if(!src)return;
+  const lbImg=document.getElementById('lightbox-img');
+  lbImg.src=src;
+  document.getElementById('lightbox').classList.add('open');
+  const loupe=document.getElementById('loupe');
+  loupe.style.backgroundImage=`url(${src})`;
+}
+function closeLightbox(){
+  document.getElementById('lightbox').classList.remove('open');
+  document.getElementById('loupe').classList.remove('active');
+}
+
+const stage=document.getElementById('lightbox-stage');
+const loupe=document.getElementById('loupe');
+const lbImg=document.getElementById('lightbox-img');
+
+stage.addEventListener('pointermove',e=>{
+  const r=lbImg.getBoundingClientRect();
+  const x=e.clientX-r.left;
+  const y=e.clientY-r.top;
+  if(x<0||y<0||x>r.width||y>r.height){loupe.classList.remove('active');return;}
+  loupe.classList.add('active');
+  const size=220;
+  // position loupe centered on cursor, relative to stage
+  const sr=stage.getBoundingClientRect();
+  loupe.style.left=(e.clientX-sr.left-size/2)+'px';
+  loupe.style.top=(e.clientY-sr.top-size/2)+'px';
+  // background sized to zoomed image, offset so cursor point is centered
+  const bgW=r.width*loupeZoom;
+  const bgH=r.height*loupeZoom;
+  loupe.style.backgroundSize=`${bgW}px ${bgH}px`;
+  loupe.style.backgroundPosition=`${-(x*loupeZoom-size/2)}px ${-(y*loupeZoom-size/2)}px`;
+});
+stage.addEventListener('pointerleave',()=>loupe.classList.remove('active'));
+stage.addEventListener('wheel',e=>{
+  e.preventDefault();
+  loupeZoom=Math.min(6,Math.max(1.4,loupeZoom-e.deltaY*0.002));
+  // trigger reposition
+  stage.dispatchEvent(new PointerEvent('pointermove',{clientX:e.clientX,clientY:e.clientY}));
+},{passive:false});
+// stop clicks on the stage from closing the lightbox
+stage.addEventListener('click',e=>e.stopPropagation());
+
+document.querySelectorAll('.modal-backdrop').forEach(m=>{
+  m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')document.querySelectorAll('.modal-backdrop.open,.lightbox.open').forEach(m=>m.classList.remove('open'));
+});
+
+window.addEventListener('resize',()=>{applyTransform();});
+
+load();
+</script>
+<script>
+/* page transition: brick sweeps across, then the next page reveals under it */
+(function(){
+  const w=document.createElement('div');w.className='wipe out';document.body.appendChild(w);
+  addEventListener('pageshow',e=>{if(e.persisted){w.className='wipe out';}});
+  document.addEventListener('click',e=>{
+    const a=e.target.closest('a');
+    if(!a)return;
+    const href=a.getAttribute('href')||'';
+    if(a.target==='_blank'||href.startsWith('http')||href.startsWith('mailto')||href.startsWith('#')||e.metaKey||e.ctrlKey)return;
+    e.preventDefault();
+    w.className='wipe in';
+    setTimeout(()=>location.href=href,400);
+  });
+})();
+/* the light shifts through the day */
+(function(){
+  const h=new Date().getHours();
+  const warm = h>=19||h<7 ? '#EDE0C9' : h>=16 ? '#F0E5D0' : '#F0E6D3';
+  document.documentElement.style.setProperty('--bone',warm);
+})();
+</script>
+</body>
+</html>
