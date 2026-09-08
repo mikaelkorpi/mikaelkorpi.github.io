@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mikael — work</title>
+<meta name="description" content="Tech recruitment and executive search. 700+ people connected to 50+ companies.">
+<meta property="og:title" content="mikael — work">
+<meta property="og:description" content="Tech recruitment and executive search. 700+ people connected to 50+ companies.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#C2432B">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%23C2432B%27/%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%275%27 fill=%27%23F0E6D3%27/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400&family=Noto+Sans+Ethiopic:wght@400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--brick:#C2432B;--bone:#F0E6D3;--ink:#1A1310;--font-g:'Space Grotesk',system-ui,sans-serif;--font-m:'Space Mono',monospace;--font-e:'Noto Sans Ethiopic',sans-serif}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--font-g);background:var(--bone);color:var(--ink);position:relative}
+
+.identity{position:fixed;top:18px;left:20px;z-index:40;display:flex;font-weight:500;font-size:17px;letter-spacing:.16em;text-transform:lowercase;color:var(--brick);text-decoration:none;padding:6px 10px 5px;margin:-6px -10px -5px;transition:background .4s ease .6s}
+body.crowd .identity{background:var(--bone)}
+.identity span{display:inline-block;position:relative}
+.identity .seed{position:absolute;left:50%;top:3.5px;width:2.4px;height:2.4px;border-radius:50%;background:var(--ink);transform:translateX(-50%);box-shadow:0 0 0 1.2px var(--bone)}
+.identity:hover span{animation:wave .9s ease-in-out}
+.identity:hover span:nth-child(1){animation-delay:0s}.identity:hover span:nth-child(2){animation-delay:.06s}.identity:hover span:nth-child(3){animation-delay:.12s}
+.identity:hover span:nth-child(4){animation-delay:.18s}.identity:hover span:nth-child(5){animation-delay:.24s}.identity:hover span:nth-child(6){animation-delay:.30s}
+@keyframes wave{0%,100%{transform:translateY(0)}35%{transform:translateY(-5px)}70%{transform:translateY(2px)}}
+.numeral{position:fixed;top:14px;right:22px;z-index:40;font-family:var(--font-e);font-size:20px;color:var(--ink);opacity:.75;padding:2px 9px;margin:-2px -9px;transition:background .4s ease .6s}
+body.crowd .numeral{background:var(--bone)}
+
+/* room */
+.room{position:absolute;inset:0;padding:72px 40px 96px;display:grid;transform-origin:var(--ox,50%) var(--oy,50%);transition:opacity .7s ease,transform 1.2s cubic-bezier(.7,0,.2,1)}
+body.crowd .room{opacity:0;pointer-events:none;transform:scale(.36)}
+.person{position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.person svg{width:74%;height:74%;overflow:visible}
+.person svg path{stroke-dasharray:200;stroke-dashoffset:200;animation:draw .8s cubic-bezier(.4,0,.2,1) forwards}
+.person svg circle{opacity:0;animation:blink .3s ease forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes blink{to{opacity:1}}
+.person .tag{position:absolute;left:50%;bottom:4%;transform:translateX(-50%) translateY(4px);font-family:var(--font-m);font-size:9px;letter-spacing:.06em;text-transform:lowercase;color:var(--ink);opacity:0;transition:opacity .2s,transform .2s;white-space:nowrap}
+.person:hover .tag{opacity:1;transform:translateX(-50%) translateY(0)}
+.person.me svg{transform:scale(1.18)}
+
+.wires{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:5}
+.wires line{stroke:var(--brick);stroke-width:1;stroke-dasharray:2000;stroke-dashoffset:2000;animation:wirein .5s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes wirein{to{stroke-dashoffset:0}}
+
+/* crowd — camera pulls back */
+.crowdsvg{position:fixed;inset:0;width:100%;height:100%;z-index:3;opacity:0;pointer-events:none;transform-origin:var(--ox,50%) var(--oy,50%);transform:scale(2.8);transition:opacity .5s ease,transform 1.2s cubic-bezier(.7,0,.2,1)}
+body.crowd .crowdsvg{opacity:1;transform:scale(1)}
+.crowdsvg use{opacity:0;animation:pop .35s ease forwards}
+@keyframes pop{to{opacity:1}}
+
+/* the card — a solid brick block over the crowd */
+.note{position:fixed;left:40px;bottom:96px;z-index:30;width:400px;padding:30px 30px 26px;background:var(--brick);color:var(--bone);
+  opacity:0;pointer-events:none;transform:translateY(10px);transition:opacity .4s ease .9s,transform .4s ease .9s}
+body.crowd .note{opacity:1;pointer-events:auto;transform:translateY(0)}
+.note .big{font-weight:700;font-size:76px;line-height:.95;letter-spacing:-.02em;color:var(--bone)}
+.note .sub{font-family:var(--font-m);font-size:12px;letter-spacing:.06em;text-transform:lowercase;color:var(--bone);margin-top:12px;line-height:1.75;opacity:.92}
+.note .dna{margin-top:22px;padding-top:16px;border-top:1px solid rgba(240,230,211,.35)}
+.note .dna div{font-family:var(--font-m);font-size:11px;letter-spacing:.04em;line-height:2;color:var(--bone);text-transform:lowercase;opacity:.85}
+.note .dna b{font-weight:400;color:var(--bone);display:inline-block;width:46px;opacity:1;border-bottom:1px solid var(--bone)}
+.note .meta{font-family:var(--font-m);font-size:12px;letter-spacing:.06em;margin-top:20px}
+.note a{color:var(--bone);text-decoration:none;border-bottom:1px solid var(--bone)}
+.note .close{position:absolute;top:10px;right:12px;font-family:var(--font-m);font-size:9px;letter-spacing:.1em;color:var(--bone);opacity:.6;cursor:pointer;background:none;border:none}
+.note .close:hover{opacity:1}
+
+/* sectors card */
+.sectors{position:fixed;right:40px;bottom:96px;z-index:30;width:290px;padding:22px 24px 20px;background:var(--bone);color:var(--ink);border:1.5px solid var(--brick);
+  opacity:0;pointer-events:none;transform:translateY(10px);transition:opacity .4s ease 1.05s,transform .4s ease 1.05s}
+body.crowd .sectors{opacity:1;pointer-events:auto;transform:translateY(0)}
+.sectors h3{font-family:var(--font-m);font-size:10px;letter-spacing:.12em;text-transform:lowercase;color:var(--brick);margin-bottom:14px}
+.sectors ul{list-style:none}
+.sectors li{font-family:var(--font-m);font-size:11px;letter-spacing:.04em;line-height:1.85;text-transform:lowercase;position:relative;padding-left:14px}
+.sectors li::before{content:"";position:absolute;left:0;top:.78em;width:4px;height:4px;border-radius:50%;background:var(--brick)}
+
+/* bottom band under the timeline when the crowd is up */
+.band{position:fixed;left:0;right:0;bottom:0;height:78px;background:var(--bone);z-index:25;opacity:0;transition:opacity .4s ease .6s;pointer-events:none}
+body.crowd .band{opacity:1}
+
+/* timeline */
+.timeline{position:fixed;left:40px;right:120px;bottom:44px;height:1px;background:rgba(26,19,16,.25);z-index:30}
+.timeline .pt{position:absolute;top:50%;width:7px;height:7px;border-radius:50%;background:var(--bone);border:1.5px solid var(--ink);transform:translate(-50%,-50%);cursor:default;transition:background .2s,border-color .2s}
+.timeline .pt:hover{background:var(--brick);border-color:var(--brick)}
+.timeline .pt .lbl{position:absolute;left:50%;top:14px;transform:translateX(-50%);white-space:nowrap;font-family:var(--font-m);font-size:9px;letter-spacing:.08em;text-transform:lowercase;color:var(--ink);opacity:0;transition:opacity .2s}
+.timeline .pt:hover .lbl{opacity:1}
+.timeline .pt.now{background:var(--brick);border-color:var(--brick)}
+
+/* arrows — one thin stroke each */
+.arrows{position:fixed;right:22px;bottom:34px;z-index:40;display:flex;gap:10px}
+.arrows a{display:block;width:22px;height:12px}
+.arrows svg{width:100%;height:100%;stroke:var(--ink);stroke-width:1.2;fill:none;stroke-linecap:round;stroke-linejoin:round;opacity:.4;transition:opacity .2s,transform .25s}
+.arrows a:hover svg{opacity:1;stroke:var(--brick)}
+.arrows a.next:hover svg{transform:translateX(2px)}
+.arrows a.prev:hover svg{transform:translateX(-2px)}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important}
+}
+
+@media (max-width:720px){
+  .room{padding:64px 16px 150px}
+  .note{left:16px;right:16px;width:auto;bottom:130px;padding:22px 22px 20px}
+  .note .big{font-size:56px}
+  .sectors{display:none}
+  .timeline{left:20px;right:20px;bottom:60px}
+  .band{height:104px}
+}
+
+/* page transition */
+.wipe{position:fixed;inset:0;background:var(--brick);z-index:200;transform:translateY(100%);pointer-events:none}
+.wipe.in{animation:wipeIn .42s cubic-bezier(.7,0,.3,1) forwards}
+.wipe.out{transform:translateY(0);animation:wipeOut .5s .05s cubic-bezier(.7,0,.3,1) forwards}
+@keyframes wipeIn{to{transform:translateY(0)}}
+@keyframes wipeOut{to{transform:translateY(-100%)}}
+</style>
+</head>
+<body>
+
+<a class="identity" href="index.html"><span>m</span><span>ı<i class="seed"></i></span><span>k</span><span>a</span><span>e</span><span>l</span></a>
+<div class="numeral" aria-label="2">፪</div>
+
+<div class="room" id="room"></div>
+<svg class="wires" id="wires"></svg>
+<svg class="crowdsvg" id="crowd"></svg>
+
+<div class="note" id="note">
+  <button class="close" onclick="uncrowd()">close</button>
+  <p class="big">700+</p>
+  <p class="sub">tech professionals connected<br>to 50+ companies in 9 countries</p>
+  <div class="dna">
+    <div><b>run</b> co-founder · board member · sales · marketing · business dev</div>
+    <div><b>hire</b> executive search · embedded ta · sourcing · employer brand</div>
+    <div><b>lead</b> team lead · coaching · ta operations</div>
+    <div><b>build</b> ai-native workflows · agentic automation · vibe coding · internal tools</div>
+  </div>
+  <p class="meta"><a href="mailto:mikael@ilmiotalent.fi">mikael@ilmiotalent.fi</a> &nbsp;·&nbsp; <a href="https://www.linkedin.com/in/mikaelkorpi/" target="_blank" rel="noopener">linkedin</a></p>
+</div>
+
+<div class="sectors">
+  <h3>industries</h3>
+  <ul>
+    <li>quantum computing</li>
+    <li>space tech</li>
+    <li>deep tech</li>
+    <li>defence &amp; security</li>
+    <li>cybersecurity</li>
+    <li>fintech</li>
+    <li>medtech</li>
+    <li>industrial automation</li>
+    <li>robotics</li>
+    <li>gaming</li>
+    <li>energy</li>
+    <li>mobility</li>
+    <li>commerce</li>
+  </ul>
+</div>
+
+<div class="band"></div>
+<div class="timeline" id="timeline"></div>
+
+<div class="arrows">
+  <a class="prev" href="index.html" aria-label="previous"><svg viewBox="0 0 22 12"><path d="M20,6.2 C14,5.9 8,6.3 2,6"/><path d="M5.5,3.2 C4.2,4.3 3,5.2 2,6 C3.1,6.9 4.3,8 5.5,9.1"/></svg></a>
+  <a class="next" href="vibecode.html" aria-label="next"><svg viewBox="0 0 22 12"><path d="M2,5.8 C8,6.1 14,5.7 20,6"/><path d="M16.5,2.9 C17.8,4 19,5.1 20,6 C18.9,6.9 17.7,8.1 16.5,9.2"/></svg></a>
+</div>
+
+<script>
+const ROLES=['software developer','lead architect','data engineer','data architect','ai / ml engineer','data scientist','embedded sw engineer','sap architect','head of technology','product manager','sales executive','security engineer','mobile developer','cloud architect','platform engineer','devops engineer','frontend developer','backend developer','solution architect','integration specialist','ux designer','tech lead','cto','qa engineer','site reliability engineer','fullstack developer','head of engineering','engineering manager','data analyst','scrum master','ios developer','android developer','game developer','firmware engineer','network engineer','it support specialist','system administrator','bi developer','business analyst','head of data','vp of engineering','ml ops engineer','security architect','test automation engineer','product designer','product owner','cloud engineer','erp consultant','salesforce architect','service designer','technical writer','delivery manager','it manager','head of product','chief architect','database administrator','automation engineer','robotics engineer','hardware engineer','account executive'];
+const jit=k=>(Math.random()-.5)*k;
+const f=n=>n.toFixed(1);
+function seg(pts,k){
+  const q=pts.map(([x,y])=>[x+jit(k),y+jit(k)]);
+  let d=`M${f(q[0][0])},${f(q[0][1])}`,i=1;
+  for(;i+2<q.length;i+=3)d+=` C${f(q[i][0])},${f(q[i][1])} ${f(q[i+1][0])},${f(q[i+1][1])} ${f(q[i+2][0])},${f(q[i+2][1])}`;
+  const rem=q.length-i;
+  if(rem===1)d+=` L${f(q[i][0])},${f(q[i][1])}`;
+  if(rem===2)d+=` Q${f(q[i][0])},${f(q[i][1])} ${f(q[i+1][0])},${f(q[i+1][1])}`;
+  return d;
+}
+function strokesFor(jitter){
+  const hairH=jit(6),eyeY=jit(5);
+  return [
+    [[64,64],[61,52],[64,42+hairH]],
+    [[70,33+hairH],[80,26+hairH],[92,27+hairH],[102,24+hairH]],
+    [[108,25+hairH],[120,29+hairH],[133,38+hairH],[138,56]],
+    [[66,70],[64,84],[72,100],[86,112]],
+    [[90,114],[100,115],[110,111]],
+    ...(Math.random()<.35?[]:[[[135,72],[134,88],[128,100]]]),
+    [[104,64],[102,78],[100,92],[93,94]],
+    [[78,66],[85,62],[92,64]],
+    [[80,74+eyeY],[86,70+eyeY],[92,74+eyeY],[86,77+eyeY],[80,74+eyeY]],
+    [[112,60],[119,57],[125,59]],
+    [[114,70-eyeY],[118,66-eyeY],[122,70-eyeY],[118,74-eyeY],[114,70-eyeY]],
+    ...(Math.random()<.3?[]:[[[93,104],[100,106],[108,102]]]),
+    [[97,117],[96,124],[95,131]],
+    [[46,186],[56,156],[74,141],[94,136]],
+    [[114,136],[132,142],[148,158],[154,186]],
+  ].map(p=>seg(p,jitter));
+}
+function person(color,jitter,delay){
+  const flip=Math.random()<.5,tilt=jit(10);
+  const paths=strokesFor(jitter).map((d,i)=>`<path d="${d}" style="animation-delay:${(delay+i*.04).toFixed(2)}s"/>`).join('');
+  const dots=`<circle cx="${f(86+jit(1))}" cy="74" r="1.6" style="animation-delay:${(delay+.7).toFixed(2)}s"/><circle cx="${f(118+jit(1))}" cy="70" r="1.4" style="animation-delay:${(delay+.8).toFixed(2)}s"/>`;
+  return `<svg viewBox="0 0 200 200" fill="${color}" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g transform="rotate(${f(tilt)} 100 100) ${flip?'scale(-1,1) translate(-200,0)':''}"><g fill="none">${paths}</g>${dots}</g></svg>`;
+}
+const shuffle=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;};
+
+const room=document.getElementById('room'),wires=document.getElementById('wires'),crowd=document.getElementById('crowd');
+let me=null;const meRel=[0.62,0.42];
+
+function build(){
+  room.innerHTML='';wires.innerHTML='';
+  const W=innerWidth-80,H=innerHeight-168;
+  const size=Math.max(88,Math.min(130,Math.sqrt((W*H)/60)));
+  const cols=Math.max(4,Math.floor(W/size)),rows=Math.max(3,Math.floor(H/size));
+  room.style.gridTemplateColumns=`repeat(${cols},1fr)`;room.style.gridTemplateRows=`repeat(${rows},1fr)`;
+  const meCol=Math.round(cols*meRel[0]),meRow=Math.round(rows*meRel[1]);
+  const roles=shuffle(ROLES);let ri=0;
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+    const isMe=(r===meRow&&c===meCol),d=Math.hypot(c-meCol,r-meRow);
+    const el=document.createElement('div');el.className='person'+(isMe?' me':'');
+    el.innerHTML=person(isMe?'#C2432B':'#1A1310',isMe?2.2:3.4,0.1+d*0.09);
+    if(!isMe){
+      const t=document.createElement('span');t.className='tag';t.textContent=roles[ri++%roles.length];el.appendChild(t);
+      el.addEventListener('pointerenter',()=>wire(el));el.addEventListener('pointerleave',unwire);
+    } else {me=el;el.addEventListener('click',docrowd);}
+    room.appendChild(el);
+  }
+  requestAnimationFrame(()=>{
+    const r=me.getBoundingClientRect();
+    document.documentElement.style.setProperty('--ox',(r.left+r.width/2)+'px');
+    document.documentElement.style.setProperty('--oy',(r.top+r.height/2)+'px');
+  });
+}
+function center(el){const r=el.getBoundingClientRect();return [r.left+r.width/2,r.top+r.height*0.45];}
+/* walk from the centre outwards until we leave the figure's box */
+function edge(el,cx,cy,tx,ty){
+  const r=el.getBoundingClientRect();
+  const hw=r.width*0.30,hh=r.height*0.32;      // the drawn figure, not the whole cell
+  const dx=tx-cx,dy=ty-cy,len=Math.hypot(dx,dy)||1;
+  const sx=Math.abs(dx)>1e-6?hw/Math.abs(dx/len):Infinity;
+  const sy=Math.abs(dy)>1e-6?hh/Math.abs(dy/len):Infinity;
+  const t=Math.min(sx,sy);
+  return [cx+dx/len*t,cy+dy/len*t];
+}
+function wire(el){
+  const [x,y]=center(el),[mx,my]=center(me);
+  const [ax,ay]=edge(el,x,y,mx,my);
+  const [bx,by]=edge(me,mx,my,x,y);
+  wires.innerHTML=`<line x1="${ax}" y1="${ay}" x2="${bx}" y2="${by}"/>`;
+}
+function unwire(){wires.innerHTML='';}
+
+function buildCrowd(){
+  const N=700,W=innerWidth,H=innerHeight;
+  const cols=Math.ceil(Math.sqrt(N*W/H)),rows=Math.ceil(N/cols);
+  const cw=W/cols,ch=H/rows,s=Math.min(cw,ch)*0.9;
+  let defs='<defs>';
+  for(let v=0;v<10;v++){
+    defs+=`<symbol id="p${v}" viewBox="0 0 200 200"><g fill="none" stroke="#1A1310" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">${strokesFor(4).map(d=>`<path d="${d}"/>`).join('')}</g></symbol>`;
+  }
+  defs+=`<symbol id="pme" viewBox="0 0 200 200"><g fill="none" stroke="#C2432B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${strokesFor(2).map(d=>`<path d="${d}"/>`).join('')}</g><circle cx="86" cy="74" r="2.2" fill="#C2432B"/><circle cx="118" cy="70" r="2" fill="#C2432B"/></symbol></defs>`;
+  const mc=Math.round(cols*meRel[0]),mr=Math.round(rows*meRel[1]);
+  let uses='',count=0;
+  for(let r=0;r<rows&&count<N;r++)for(let c=0;c<cols&&count<N;c++){
+    if(r===mr&&c===mc)continue;
+    const d=Math.hypot(c-mc,r-mr);
+    const x=c*cw+(cw-s)/2+jit(3),y=r*ch+(ch-s)/2+jit(3),tilt=jit(12),flip=Math.random()<.5;
+    uses+=`<use href="#p${Math.floor(Math.random()*10)}" x="${f(x)}" y="${f(y)}" width="${f(s)}" height="${f(s)}" transform="rotate(${f(tilt)} ${f(x+s/2)} ${f(y+s/2)})${flip?` translate(${f(2*x+s)},0) scale(-1,1)`:''}" style="animation-delay:${(.2+d*0.03).toFixed(2)}s"/>`;
+    count++;
+  }
+  const ms=s*1.9,mx=mc*cw+(cw-ms)/2,my=mr*ch+(ch-ms)/2;
+  uses+=`<use href="#pme" x="${f(mx)}" y="${f(my)}" width="${f(ms)}" height="${f(ms)}" style="animation-delay:0s"/>`;
+  crowd.innerHTML=defs+uses;
+  document.documentElement.style.setProperty('--ox',(mx+ms/2)+'px');
+  document.documentElement.style.setProperty('--oy',(my+ms/2)+'px');
+}
+function docrowd(){unwire();buildCrowd();requestAnimationFrame(()=>document.body.classList.add('crowd'));}
+function uncrowd(){document.body.classList.remove('crowd');setTimeout(()=>{crowd.innerHTML='';},1300);}
+
+const TL=[['2018','first hire'],['2020','in-house · tech consultancy'],['2021','led recruitment in a listed company'],['2021','co-founded ilmiö talent agency'],['2025','in-house · product company'],['2025','co-founded ilmiö consulting'],['2026','still building']];
+const tl=document.getElementById('timeline');
+TL.forEach(([y,l],i)=>{
+  const p=document.createElement('div');p.className='pt'+(i===TL.length-1?' now':'');
+  p.style.left=(4+i*(92/(TL.length-1)))+'%';
+  p.innerHTML=`<span class="lbl">${y} — ${l}</span>`;tl.appendChild(p);
+});
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight')location.href='vibecode.html';
+  if(e.key==='ArrowLeft')location.href='index.html';
+  if(e.key==='Escape')uncrowd();
+});
+
+build();
+let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{build();if(document.body.classList.contains('crowd'))buildCrowd();},150);});
+</script>
+<script>
+/* page transition: brick sweeps across, then the next page reveals under it */
+(function(){
+  const w=document.createElement('div');w.className='wipe out';document.body.appendChild(w);
+  addEventListener('pageshow',e=>{if(e.persisted){w.className='wipe out';}});
+  document.addEventListener('click',e=>{
+    const a=e.target.closest('a');
+    if(!a)return;
+    const href=a.getAttribute('href')||'';
+    if(a.target==='_blank'||href.startsWith('http')||href.startsWith('mailto')||href.startsWith('#')||e.metaKey||e.ctrlKey)return;
+    e.preventDefault();
+    w.className='wipe in';
+    setTimeout(()=>location.href=href,400);
+  });
+})();
+/* the light shifts through the day */
+(function(){
+  const h=new Date().getHours();
+  const warm = h>=19||h<7 ? '#EDE0C9' : h>=16 ? '#F0E5D0' : '#F0E6D3';
+  document.documentElement.style.setProperty('--bone',warm);
+})();
+</script>
+</body>
+</html>
